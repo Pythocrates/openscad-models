@@ -5,17 +5,21 @@ module long_hole(position, radius, length, depth, fn) {
 }
 
 module half_plate(size, cavity_size, offset, cavity, thickenings) {
-    module default_long_hole(position) {
+    module lateral_long_hole(position) {
         long_hole(position=position, radius=2.5, length=4, depth=size[2], fn=20);
+    }
+
+    module central_long_hole(position) {
+        long_hole(position=position, radius=2.5, length=7.5, depth=size[2], fn=20);
     }
 
     difference() {
         translate([0, -size[1] / 2, 0]) cube (size);
         translate([offset, -cavity[1] / 2, size[2] - cavity[2]]) cube (cavity);
-        default_long_hole([size[0] - 4.25, 0, 0]);
-        default_long_hole([0, 0, 0]);
+        lateral_long_hole([size[0] - 4.25, 0, 0]);
+        central_long_hole([0, 0, 0]);
     }
-    translate([offset - 1, 0, size[2] + 1]) rotate([0, -15, 0]) cube([1, 5, 2], center=true);
+    translate([offset - 0.625, 0, size[2] + 1]) rotate([0, 0, 0]) cube([1.25, 5, 2], center=true);
 
     // thickening
     translate([offset + (cavity[0] - .8 * cavity[0]) / 2, -cavity[1] / 2, 0]) {
