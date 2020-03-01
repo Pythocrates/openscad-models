@@ -9,7 +9,7 @@ module nut(xdir, ydir) {
 
 module hop(xdir, ydir) {
     translate([18 * xdir, 34.6 * ydir, -6.75]) {
-        scale([0.3, 0.3, 1]) mirror([0, 1, 0]) translate([-12, 12, 0]) import("/home/mkrzykaw/Downloads/3d_models/Hop_Flower/files/hop_flower.stl");
+        scale([0.33, 0.33, 1]) mirror([0, 1, 0]) translate([-12, 12, 0]) import("/home/mkrzykaw/Downloads/3d_models/Hop_Flower/files/hop_flower.stl");
     }
 }
 
@@ -26,7 +26,7 @@ module rounded_corner(xdir, ydir) {
 }
 
 module e_bar(x, y) {
-    translate([x, y, -1.5]) rotate([0, 0, -7]) cube([1, 10, 1], center=true);
+    translate([x, y, -1]) rotate([0, 0, -7]) cube([1, 10, 1], center=true);
 }
 
 module foot(xdir, ydir) {
