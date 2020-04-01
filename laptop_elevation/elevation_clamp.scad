@@ -1,22 +1,21 @@
 // These are laptop elevation clamps for a Lenovo Thinkpad X1 laptop.
 
 module stand() {
+    cube([15, 40, 1.0]);
+    translate([0, 39, -14]) cube([15, 1, 15]);
+    translate([0, 38.14, -14.5]) rotate([30, 0, 0]) cube([15, 1, 17]);
+    translate([0, 39, -14]) rotate([0, 90, 0]) cylinder(h=15, r=1, $fn=60);
+
     difference() {
         union() {
-            cube([15, 20, 13]);
-            difference() {
-                translate([0, 10, 0]) rotate([0, 90, 0]) cylinder(r=10, h=15, $fn=60);
-                translate([0, 10, 0]) rotate([0, 90, 0]) cylinder(r=9, h=15, $fn=60);
+            translate([0, 0, 11.5]) cube([15, 20, 1.5]);
+
+            for (i = [0 : 2]){
+                #translate([0, i * 9, 0]) cube([1, 2, 13]);
+                translate([1.0, i * 9, 0]) rotate([0, -7.5, 0]) cube([1.5, 2, 11.5]);
             }
         }
-
-        translate([1, 0, 2]) cube([14, 20, 9.5]);
-        translate([2.5, 0, 1]) cube([12.5, 20, 10.5]);
-
-        // ventilation holes
-        translate([0, 1.5, 2]) cube([1, 7.5, 9]);
-        translate([0, 11, 2]) cube([1, 7.5, 9]);
-
+        translate([-2, 0, 0]) cube([2, 20, 15]);
     }
 }
 
