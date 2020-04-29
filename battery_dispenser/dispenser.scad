@@ -22,85 +22,43 @@ height_i = height - thickness_bottom;
 
 level_height = 14;
 
-/*
-module stack_module() {
-    difference() {
-        cuboid(
-            [width, depth, height],
-            fillet=5,
-            edges=EDGE_FR_RT + EDGE_FR_LF + EDGE_BK_LF + EDGE_BK_RT + EDGE_BOT_FR,
-            align=V_UP,
-            $fn=24
-        );
-        up(thickness_bottom) cuboid([width_i, depth_i, height_i], align=V_UP);
-        up(height - 40) {
-            cuboid([25, depth, height_i], align=V_UP);
-    }
-    }
-    }
-*/
-
-
-/*
-rotate([90, 0, 0]) linear_extrude(height = 31, center = false, convexity = 10, scale=[1, 0.1])
-    translate([0, 0, 0])  polygon(points=[[0, 3],[0, -5],[10, 1]]);
-*/
-
 
 module wedge() {
     rotate([90, 0, 90]) {
-        linear_extrude(height=46, center = false, convexity = 10, scale=[1, 1]) {
-            translate([0, 0, 0]) {
-                polygon(points=[[-31, 0], [0, 0], [0, 4]]);
+        linear_extrude(height=46, center=false, convexity=10) {
+            polygon(points=[[-31, 0], [0, 0], [0, 4]]);
+        }
+    }
+}
+
+
+module one_level_long_wedge_module_with_side(punch_holes=false) {
+    wedge_side(level_height);
+
+    for (is_top=[0:1]) {
+        mirror([0, is_top, 0]) {
+            translate([-width_i / 2, depth_i / 2, level_height * is_top]) {
+                mirror([0, 0, is_top]) {
+                    wedge();
+                    fillet2 = punch_holes ? 0 : 0.5;
+                    translate([47, -2, 2.0]) cyl(l=2, d=2.5, fillet2=fillet2, orient=ORIENT_X, $fn=FN);
+                    translate([47, -11, 1.25]) cyl(l=2, d=2.5, fillet2=fillet2, orient=ORIENT_X, $fn=FN);
+                }
             }
         }
     }
 }
 
-module one_level_twin_wedge_module() {
-    translate([24, 0, 7]) cube([2, 42, 14], center=true);
-    translate([-24, 0, 7]) cube([2, 42, 14], center=true);
 
-    for (is_top=[0:1])
-        for (is_right=[0:1])
-                mirror([is_right, 0, 0])
-                    mirror([0, is_top, 0])
-                        translate([-width_i / 2, depth_i / 2, level_height * is_top])
-                            mirror([0, 0, is_top])
-                                wedge();
-}
+module multi_level_long_wedge_module_with_side(levels, with_hull=false) {
 
-module one_level_long_wedge_module_with_side(punch_holes=false) {
-    //translate([24, 0, level_height / 2]) cube([2, 42, level_height], center=true);
-    //translate([-24, 0, level_height / 2]) cube([2, 42, level_height], center=true);
-    wedge_side(level_height);
-
-    for (is_top=[0:1])
-        for (is_right=[0:0])
-            //mirror([is_right, 0, 0])
-            mirror([0, is_top, 0])
-                translate([-width_i / 2, depth_i / 2, level_height * is_top])
-                    mirror([0, 0, is_top]) {
-                        wedge();
-                        //translate([47, -2, 2]) rotate([0, 90, 0]) cylinder(h=2, r=1.0, $fn=60, center=true);
-                        //translate([47, -11, 1.25]) rotate([0, 90, 0]) cylinder(h=2, r=1.0, $fn=60, center=true);
-                        if (punch_holes) {
-                            translate([47, -2, 2.0]) cyl(l=2, d=2.5, orient=ORIENT_X, $fn=60);
-                            translate([47, -11, 1.25]) cyl(l=2, d=2.5, orient=ORIENT_X, $fn=60);
-                        } else {
-                            translate([47, -2, 2.0]) cyl(l=2, d=2.5, fillet2=.5, orient=ORIENT_X, $fn=60);
-                            translate([47, -11, 1.25]) cyl(l=2, d=2.5, fillet2=.5, orient=ORIENT_X, $fn=60);
-                        }
-                    }
-
-    //translate([24, 19, 2]) rotate([0, 90, 0]) cylinder(h=2, r=0.5, $fn=60, center=true);
-    //translate([24, 10, 1.25]) rotate([0, 90, 0]) cylinder(h=2, r=0.5, $fn=60, center=true);
-}
-
-
-module multi_level_long_wedge_module_with_side(levels) {
     for (level = [1:levels]) {
-        translate([0, 0, level * level_height]) mirror([0, 0, level % 2]) translate([0, 0, -level_height / 2]) one_level_long_wedge_module_with_side();
+        translate([0, 0, (level - 0.5) * level_height]) mirror([0, 0, level % 2]) translate([0, 0, -level_height / 2]) one_level_long_wedge_module_with_side();
+    }
+
+    if (with_hull) {
+        translate([0, 22, level_height * (0.5 + (levels / 2))]) cube([50, 2, (levels - 1) * level_height], center=true);
+        translate([0, -22, level_height * (levels / 2)]) cube([50, 2, levels * level_height], center=true);
     }
 }
 
@@ -117,7 +75,7 @@ module opposite_wedge_side(level_height) {
 
 module multi_opposite_wedge_side(level_height, levels) {
     for (level = [1:levels]) {
-        translate([70, 0, level * level_height])
+        translate([48, 0, (level - 0.5) * level_height])
             mirror([0, 0, level % 2]) translate([0, 0, -level_height / 2]) opposite_wedge_side(level_height=level_height);
     }
 }
@@ -127,55 +85,68 @@ module multi_level_hull(levels, level_height) {
 
     difference() {
         cuboid([46 +  2 * (2 + hull_thickness), 42 + 2 * (hull_thickness), levels * level_height], fillet=5, edges=EDGE_FR_RT + EDGE_FR_LF + EDGE_BK_LF + EDGE_BK_RT, $fn=FN);
-        cuboid([46 +  2 * (2 - 0.05), 42 + 2 * (0 - 0.05), levels * level_height], fillet=0, edges=EDGE_FR_RT + EDGE_FR_LF + EDGE_BK_LF + EDGE_BK_RT, $fn=FN);
+        cuboid([46 +  2 * (2 + 0.05), 42 + 2 * (0 + 0.05), levels * level_height], fillet=0, edges=EDGE_FR_RT + EDGE_FR_LF + EDGE_BK_LF + EDGE_BK_RT, $fn=FN);
     }
 }
 
-module one_level_hull_module() {
-    level_height = 12;
+module integrated_simple_base(levels) {
+    hull_thickness = 3;
 
-    difference() {
-        cuboid(
-            [width, depth, level_height],
-            fillet=5,
-            edges=EDGE_FR_RT + EDGE_FR_LF + EDGE_BK_LF + EDGE_BK_RT,
-            align=V_UP,
-            $fn=24
-        );
-        cuboid([width_i, depth_i, height_i], align=V_UP);
-        //cuboid([25, depth, height_i], align=V_UP);
+    translate([0, 5.5, 6]) {
+        difference() {
+            cuboid(
+                [46 +  2 * (2 + hull_thickness), 42 + 2 * (hull_thickness) + 15, 7],
+                align=V_DOWN,
+                fillet=5,
+                edges=EDGE_FR_RT + EDGE_FR_LF + EDGE_BK_LF + EDGE_BK_RT,
+                $fn=FN);
+            cuboid(
+                [46 +  2 * (2 + 0.05), 42 + 0.05 + 15, 5],
+                align=V_DOWN,
+                fillet=0,
+                edges=EDGE_FR_RT + EDGE_FR_LF + EDGE_BK_LF + EDGE_BK_RT,
+                $fn=FN);
+            translate([0, 22.0, 0]) cuboid(
+                [60, 13, 5],
+                align=V_DOWN,
+                fillet=2,
+                edges=EDGE_BOT_FR + EDGE_BOT_BK,
+                $fn=FN);
+            translate([0, 30, 0]) cuboid(
+                [25, 3, 5],
+                align=V_DOWN,
+                fillet=1 ,
+                edges=EDGE_BOT_RT + EDGE_BOT_LF,
+                $fn=FN);
+        }
     }
- 
+
+    translate([0, -1, 1.5]) difference() {
+        cube([50, 44, 1], center=true);
+        translate([0, 16.5, 0]) cube([46, 11, 1], center=true);
+    }
+}
+
+//levels = 3;
+
+module parts(levels, with_hull) {
+    multi_level_long_wedge_module_with_side(levels=levels, with_hull=with_hull);
+    translate([20, 0, 0]) multi_opposite_wedge_side(levels=levels, level_height=level_height);
+    //translate([-60, 0, 0]) multi_level_hull(levels=levels, level_height=level_height);
+    translate([0, 60, 0]) integrated_simple_base(levels=levels);
+}
+
+module assembly(levels, with_hull) {
+    multi_level_long_wedge_module_with_side(levels=levels, with_hull=with_hull);
+    multi_opposite_wedge_side(levels=levels, level_height=level_height);
+    //translate([-60, 0, 0]) multi_level_hull(levels=levels, level_height=level_height);
+    integrated_simple_base(levels=levels);
 }
 
 
-module wedge_stack() {
-    for (i=[1:2])
-        for (j=[0:1])
-            for (k=[0:1])
-                for (m=[0:1])
-                    mirror([k, 0, 0])
-                        mirror([0, j, 0])
-                            translate([-width_i / 2, depth_i / 2, 24 * (i + j / 2)])
-                                mirror([0, 0, m])
-                                    wedge();
-}
+parts(levels=8, with_hull=true);
 
-//stack_module();
-//wedge_stack();
-
-//stack_hull;
-//one_level_hull_module();
-
-//one_level_long_wedge_module_with_side();
-//one_level_twin_wedge_module();
-//translate([70, 0, 0]) opposite_wedge_side(level_height);
-
-levels = 3;
-multi_level_long_wedge_module_with_side(levels=levels);
-multi_opposite_wedge_side(levels=levels, level_height=level_height);
-//translate([-60, 0, 0]) multi_level_hull(levels=levels, level_height=level_height);
-translate([-60, 0, 0]) multi_level_hull(levels=1, level_height=6);
+//assembly(levels=4, with_hull=true);
 
 // battery dummies
 %translate([0, 0, 6.5]) rotate([0, 90, 0]) cylinder(r=5, h=44.5, center=true, $fn=180);
