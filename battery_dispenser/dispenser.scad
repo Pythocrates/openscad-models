@@ -127,7 +127,7 @@ module integrated_simple_base(levels) {
     }
 }
 
-//levels = 3;
+LEVELS = 8;
 
 module parts(levels, with_hull) {
     multi_level_long_wedge_module_with_side(levels=levels, with_hull=with_hull);
@@ -144,9 +144,8 @@ module assembly(levels, with_hull) {
 }
 
 
-parts(levels=8, with_hull=true);
-
-//assembly(levels=4, with_hull=true);
+parts(levels=LEVELS, with_hull=true);
+//assembly(levels=LEVELS, with_hull=true);
 
 // battery dummies
 %translate([0, 0, 6.5]) rotate([0, 90, 0]) cylinder(r=5, h=44.5, center=true, $fn=180);
