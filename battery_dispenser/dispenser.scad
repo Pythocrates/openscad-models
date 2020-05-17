@@ -127,8 +127,6 @@ module integrated_simple_base(battery_dims, levels) {
     }
 }
 
-LEVELS = 2;
-
 module parts(battery_dims, levels, with_hull) {
     multi_level_long_wedge_module_with_side(battery_dims=battery_dims, levels=levels, with_hull=with_hull);
     translate([20, 0, 0]) multi_opposite_wedge_side(battery_dims=battery_dims, levels=levels);
@@ -147,8 +145,15 @@ module assembly(battery_dims, levels, with_hull) {
 aaa_dims = [10.5, 44.5];
 aa_dims = [14.5, 50.5];
 
-parts(battery_dims=aaa_dims, levels=LEVELS, with_hull=true);
-//assembly(battery_dims=aaa_dims, levels=LEVELS, with_hull=true);
+module battery_dispenser(battery_dims, levels, as_assembly=true) {
+    if (as_assembly) {
+        assembly(battery_dims=battery_dims, levels=levels, with_hull=true);
+    } else {
+        parts(battery_dims=battery_dims, levels=levels, with_hull=true);
+    }
+}
+
+battery_dispenser(aa_dims, levels=6, as_assembly=false);
 
 // battery dummies
 %translate([0, 0, 6.5]) xcyl(d=10.5, h=44.5, center=true, $fn=180);
