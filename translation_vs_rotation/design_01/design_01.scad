@@ -158,6 +158,21 @@ module hourglass_holder(angle=0) {
     //#translate([-18.75, -8.65 + 15.7 + 1.5, 4]) cube([10, 1.5, 10], center=true);
 }
 
+module long_hourglass_holder(angle=0) {
+    translate([0, 0, 2.8]) rotate([37.05 + angle, 0, 0]) {
+        cube([10, 10, 1.9], center=true);
+        translate([0, 0, 1.9]) cube([10, 1.9, 5], center=true);
+    }
+    translate([-25.6 / 2, 0, 4]) rotate([angle, 0, 0]) difference() {
+        cylinder(r=18.6 / 2, h=73, center=true, $fn=FN);
+        cylinder(r=15.6 / 2, h=73, center=true, $fn=FN);
+        translate([-12.5, 0, 0]) cube([13, 25, 73], center=true);
+    }
+    //#translate([-18.75, -8.55, 4]) cube([10, 1.5, 10], center=true);
+    //#translate([-18.75, -8.65 + 15.7 + 1.5, 4]) cube([10, 1.5, 10], center=true);
+}
+
+
 
 module assembly() {
     bottom();
@@ -176,6 +191,7 @@ module parts() {
     translate([129.0, 61.0, 6]) lever(angle=-8.8);
     translate([60, 120, 7]) rotate([-90, 0, 0]) translate([0, 0, 0]) linear_ridge();
     translate([-30, 0, 0]) hourglass_holder();
+    translate([-60, 0, 0]) long_hourglass_holder();
 }
 
 
