@@ -19,7 +19,16 @@ module lid() {
         cyl(d=rim_diameter + 2 * radial_thickness, h=lid_height, align=V_UP, fillet2=1,  $fn=FN);
         cyl(d=rim_diameter, h=lid_height - lid_thickness, align=V_UP, $fn=FN);
     }
-    zrot_copies(n=4, r=rim_diameter / 2) zmove(1) sphere(r=1, $fn=FN);
+    //zrot_copies(n=4, r=rim_diameter / 2) zmove(1) sphere(r=1, $fn=FN);
+    intersection() {
+        zmove(1) torus(r=rim_diameter / 2, r2=1, $fn=FN);
+        union() {
+            zrot(-1.5) pie_slice(ang=3, l=3, r=rim_diameter / 2 + radial_thickness);
+            zrot(120 - 2.5) pie_slice(ang=5, l=3, r=rim_diameter / 2 + radial_thickness);
+            zrot(240 - 2.5) pie_slice(ang=5, l=3, r=rim_diameter / 2 + radial_thickness);
+        }
+    }
+    zmove(lid_height - lid_thickness) zrot(-10) pie_slice(ang=20, l=lid_thickness, r=rim_diameter / 2 + radial_thickness, $fn=FN);
 }
 
 
