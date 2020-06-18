@@ -8,70 +8,47 @@
 //	thickness - percentage relative to chord   ( range 0-99 )
 
 NOF_POINTS = 25; // datapoints on each of upper and lower surfaces
-xx = [for (i = [0 : NOF_POINTS]) 1 - cos((i - 1) * 90 / (NOF_POINTS - 1))];
+xxp = [for (i = [0 : NOF_POINTS]) 1 - cos((i - 1) * 90 / (NOF_POINTS - 1))];
+xx = [for (i = [1 : NOF_POINTS]) xxp[i]];
+
 pre_yt = [
     for (i = [0 : NOF_POINTS])
     5 * (
-        0.2969 * pow(xx[i], 0.5) - 0.126 * xx[i] - 0.3516 * pow(xx[i], 2)
-        + 0.2843 * pow(xx[i], 3) - 0.1015 * pow(xx[i], 4)
+        0.2969 * pow(xxp[i], 0.5) - 0.126 * xxp[i] - 0.3516 * pow(xxp[i], 2)
+        + 0.2843 * pow(xxp[i], 3) - 0.1015 * pow(xxp[i], 4)
     )
 ];
-dxx = [undef, for (i = [1 : NOF_POINTS]) xx[i] - xx[i - 1]];
+dxx = [for (i = [0 : NOF_POINTS - 1]) xxp[i + 1] - xxp[i]];
 
 	
 module airfoil(camber_max = 8, camber_position = 4, thickness = 12) {
-    //echo("xx", xx);
 	m = camber_max / 100;
 	p = camber_position / 10;
 	t = thickness / 100;
-	
-    yt = t * pre_yt;
 
-	yc = [
-        for (xx_i = xx)
+	ycp = [
+        for (xx_i = xxp)
         xx_i < p ?
             m / pow(p, 2) * (2 * p * xx_i - pow(xx_i, 2)) :
             m / pow(1 - p, 2) * (1 - 2 * p + 2 * p * xx_i - pow(xx_i, 2))
     ];
+    yc = [for (i = [1 : NOF_POINTS]) ycp[i]];
 
-    /*
-    dyc = [undef, for (i = [1 : NOF_POINTS]) yc[i] - yc[i - 1]];
-    atan_dyc_dxx = [undef, for (i = [1 : NOF_POINTS]) atan(dyc[i] / dxx[i])];
-    yt_sin_atan_dyc_dxx = [undef, for (i = [1 : NOF_POINTS]) yt[i] * sin(atan_dyc_dxx[i])];
-    yt_cos_atan_dyc_dxx = [undef, for (i = [1 : NOF_POINTS]) yt[i] * cos(atan_dyc_dxx[i])];
-    */
+    yt = t * pre_yt;
+    dyc = [for (i = [0 : NOF_POINTS - 1]) ycp[i + 1] - ycp[i]];
+    atan_dyc_dxx = [for (i = [0 : NOF_POINTS - 1]) atan(dyc[i] / dxx[i])];
+    yt_sin_atan_dyc_dxx = [for (i = [0 : NOF_POINTS - 1]) yt[i] * sin(atan_dyc_dxx[i])];
+    yt_cos_atan_dyc_dxx = [for (i = [0 : NOF_POINTS - 1]) yt[i] * cos(atan_dyc_dxx[i])];
 
-    dyc = [undef, for (i = [1 : NOF_POINTS]) yc[i] - yc[i - 1]];
-    atan_dyc_dxx = [undef, for (i = [1 : NOF_POINTS]) atan(dyc[i] / dxx[i])];
-    yt_sin_atan_dyc_dxx = [undef, for (i = [1 : NOF_POINTS]) yt[i] * sin(atan_dyc_dxx[i])];
-    yt_cos_atan_dyc_dxx = [undef, for (i = [1 : NOF_POINTS]) yt[i] * cos(atan_dyc_dxx[i])];
-    echo(atan_dyc_dxx);
-
-	xu = [
-        for (j = [1 : NOF_POINTS])
-        xx[j] - yt_sin_atan_dyc_dxx[j]
-    ];
-
-	yu = [
-        for (j = [1 : NOF_POINTS])
-        yc[j] + yt_cos_atan_dyc_dxx[j]
-    ];
-	xl = [
-        for (j = [1 : NOF_POINTS])
-        xx[j] + yt_sin_atan_dyc_dxx[j]
-    ];
-	yl = [
-        for (j = [1 : NOF_POINTS])
-        yc[j] - yt_cos_atan_dyc_dxx[j]
-    ];
+    xu = xx - yt_sin_atan_dyc_dxx;
+    yu = yc + yt_cos_atan_dyc_dxx;
+    xl = xx + yt_sin_atan_dyc_dxx;
+    yl = yc - yt_cos_atan_dyc_dxx;
 
 	polygon(
         points=[
             for (i = [0 : NOF_POINTS - 1]) [xu[i], yu[i]],  // upper side front-to-back
             for (i = [NOF_POINTS - 1: -1 : 1]) [xl[i], yl[i]]  // lower side back-to-front
         ]
-    ); 
+    );
 }
-
-//airfoil();
-//airfoil(0,0,10);

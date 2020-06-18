@@ -5,15 +5,15 @@ use <naca4.scad>
 // Copyright 2011. Author: Quentin Harley (qharley)
 // This derivative design is licensed under GPLv2.
 //
-// To make a funtional turbine you need to print at least the base and top sections, and as many atomic sections as you like, 
-// taking the stability of your support rod into account.  The length of your turbine will increase by (hx_length / 3) for every 
+// To make a funtional turbine you need to print at least the base and top sections, and as many atomic sections as you like,
+// taking the stability of your support rod into account.  The length of your turbine will increase by (hx_length / 3) for every
 // atomic section added.  For a constant torque turbine, you need 2+(3n) atomic sections.
 
 // Be careful not to be too agressive with camber.  A recent study has shown that a very low camber of 2 may assist in self starting,
 // but that the efficiency of the turbine is optimal at a camber of Zero.  The foil profile used in the study was NACA2415.
-// I would therefore recommend to use a different starting mechanism. 
+// I would therefore recommend to use a different starting mechanism.
 
-// This iteration incorporates a parametric Savonius turbine for starting.  
+// This iteration incorporates a parametric Savonius turbine for starting.
 // to optimise the savonius turbine, the scoops should be two time as high as its diameter,
 // and should overlap by 15 to 30% of the diameter
 
@@ -53,15 +53,19 @@ Savonius_Starter = 1;	// 1 to use a savonius turbine to facilitate starting.  St
 	Atomic, inverted no shaft = 8
 */
 
-Module = 1;
+Module = 101;
 
 
 
 // *****************************Modules************************************
 
+if (Module == 101){
+	full_turbine();
+}
+
 if (Module == 1){
 	Turbine_Assembled();
-} 
+}
 
 if (Module ==2){
 	helical_wing_atomic(	ha_length = Length, ha_base = Base, ha_radius = Radius, ha_support = Rod_size);
@@ -86,11 +90,11 @@ if (Module ==5){
 
 if (Module == 6){
 	Savonius_Module(hs_length = Length, hs_overlap = 0.30, hs_thickness = 2);
-} 
+}
 
 if (Module == 7){
 	Turbine_Base_n_atoms();
-} 
+}
 
 if (Module == 8){
 	difference(){
@@ -107,8 +111,8 @@ if (Module == 8){
 
 //wing_support(Radius,8);
 
-module helical_wing(h_length, h_base,h_radius,h_twist = -60, tab_position =1, guide_hole = 3, Tabs = 0) { 
-	linear_extrude(height = h_length, convexity = 10, twist = h_twist,$fn=100) 
+module helical_wing(h_length, h_base,h_radius,h_twist = -60, tab_position =1, guide_hole = 3, Tabs = 0) {
+	linear_extrude(height = h_length, convexity = 10, twist = h_twist,$fn=100)
 		translate([-h_base/2,h_radius,0])
 			scale([h_base,h_base,1])
 				difference(){
@@ -170,7 +174,7 @@ module wing_support(hs_radius, hs_support){
 		union(){
 
 			minkowski(){
-				cube(size = [hs_support*2,  hs_radius, (hs_support / 5)]); 
+				cube(size = [hs_support*2,  hs_radius, (hs_support / 5)]);
 				rotate([90,0,0])
 					cylinder(r=hs_support/10, $fn=12);
 			}
@@ -184,7 +188,7 @@ module wing_support(hs_radius, hs_support){
 }
 
 
-module helical_wing_base(hb_length, hb_base, hb_radius, hb_twist=-60, hb_support = 8.01) { 
+module helical_wing_base(hb_length, hb_base, hb_radius, hb_twist=-60, hb_support = 8.01) {
 	helical_wing(hb_length, hb_base, hb_radius, h_twist = hb_twist, guide_hole = Guide_hole, Tabs = 1);
 	rotate([0,0,120])
 		helical_wing(hb_length/3*2, hb_base, hb_radius, h_twist = hb_twist/3*2, guide_hole = Guide_hole, Tabs = 1);
@@ -219,7 +223,7 @@ module helical_wing_base(hb_length, hb_base, hb_radius, hb_twist=-60, hb_support
 
 }
 
-module helical_wing_top(ht_length, ht_base, ht_radius, ht_twist=-60, ht_support = 8.01) { 
+module helical_wing_top(ht_length, ht_base, ht_radius, ht_twist=-60, ht_support = 8.01) {
 	helical_wing(ht_length, ht_base, ht_radius, h_twist = ht_twist,tab_position =2, guide_hole = Guide_hole, Tabs = Support_Tabs);
 	rotate([0,0,-100])
 		translate([0,0,ht_length/3])
@@ -229,7 +233,7 @@ module helical_wing_top(ht_length, ht_base, ht_radius, ht_twist=-60, ht_support 
 			helical_wing(ht_length/3, ht_base, ht_radius, h_twist = ht_twist/3,tab_position =2, guide_hole = Guide_hole, Tabs = Support_Tabs);
 
    translate([0,0,ht_length])
-      rotate([0,180,60]) 
+      rotate([0,180,60])
 	difference(){
 	   union(){
 			wing_support(ht_radius,ht_support);
@@ -255,7 +259,7 @@ module helical_wing_top(ht_length, ht_base, ht_radius, ht_twist=-60, ht_support 
 				cylinder(h = (ht_length), r = ht_support);
 			}
 		}
-	   
+
 		translate([0,0,-1])
 			cylinder(h = (ht_length)+2, r = ht_support/2);
 	   translate([0,0,5])	
@@ -302,6 +306,61 @@ module Savonius_Module(hs_length, hs_overlap, hs_thickness){
 			Savonius_Blade(sb_length = hs_length,sb_thickness = hs_thickness);
 
 }
+
+include <BOSL/constants.scad>
+use <BOSL/shapes.scad>
+use <BOSL/transforms.scad>
+
+
+module full_turbine(height=120, radius=50) {
+    turbine_wings(height=height, radius=radius);
+    turbine_bottom(radius=radius);
+}
+
+
+module turbine_wings(height, radius) {
+    zrot_copies(n=3)
+        helical_wing(h_length=height, h_base=Base, h_radius=radius, h_twist=60);
+}
+
+
+module turbine_bottom(radius) {
+    zrot_copies(n=3)
+        wing_support(hs_radius=radius, hs_support=10);
+}
+
+
+module shaft(length, inner_radius, outer_radius, dovetail=0) {
+    if (dovetail == 0) {
+        difference() {
+            zcyl(l=length, r=outer_radius, align=V_TOP);
+            zcyl(l=length, r=inner_radius, align=V_TOP);
+        }
+    } else if (dovetail == 1) {
+        difference() {
+            union() {
+                zcyl(l=length, r=outer_radius, align=V_TOP);
+                zmove(length) intersection() {
+                    zcyl(l=4, r=outer_radius, align=V_TOP);
+                    prismoid(size1=[inner_radius, 2 * outer_radius], size2=[inner_radius * 1.5, 2 * outer_radius], h=4);
+                }
+            }
+            zcyl(l=length + 4, r=inner_radius, align=V_TOP);
+        }
+    } else if (dovetail == -1) {
+        difference() {
+            zcyl(l=length, r=outer_radius, align=V_TOP);
+            zmove(length) intersection() {
+                prismoid(size2=[inner_radius, 2 * outer_radius], size1=[inner_radius * 1.5, 2 * outer_radius], h=4, align=V_DOWN);
+            }
+            zcyl(l=length + 4, r=inner_radius, align=V_TOP);
+        }
+    }
+}
+
+xmove(40) shaft(length=20, inner_radius=8 / 2, outer_radius=11 / 2, dovetail=1);
+xmove(-40) shaft(length=20, inner_radius=8 / 2, outer_radius=11 / 2, dovetail=-1);
+
 
 module Turbine_Assembled(){
 	//helical wing base
