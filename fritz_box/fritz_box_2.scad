@@ -35,6 +35,7 @@ module hook_adapter(nof_hooks, gap, fillet, bottom_thickness) {
 
 module parts() {
     hook_adapter(nof_hooks=10, gap=2, fillet=2, bottom_thickness=2.5);
+    xmove(-5) xflip() hook_adapter(nof_hooks=10, gap=2, fillet=2, bottom_thickness=2.5);
 }
 
 
