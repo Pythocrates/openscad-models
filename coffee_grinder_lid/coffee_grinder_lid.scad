@@ -1,4 +1,4 @@
-// This a lid for yoghurt coming without a solid lid.
+// This a lid for a coffee grinder.
 
 include <BOSL/constants.scad>
 use <BOSL/shapes.scad>
