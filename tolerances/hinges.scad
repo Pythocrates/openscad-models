@@ -18,24 +18,36 @@ module hinge_cylinder(r, h, tolerance=0) {
 }
 
 module hinge(r, h, length, thickness, width, tolerance=0) {
+    ycyl(r=thickness / 2, h=width + tolerance, $fn=FN);
+    ycyl(r=thickness / 2 + tolerance, h=width + tolerance, $fn=FN);
     hinge_cylinder(r=r, h=h, tolerance=tolerance);
-    xmove(length) hinge_cylinder(r=r, h=h, tolerance=tolerance);
+
+    xmove(length) {
+        hinge_cylinder(r=r, h=h, tolerance=tolerance);
+        ycyl(r=thickness / 2, h=width + tolerance, $fn=FN);
+    }
+
     cuboid([length, width + tolerance, thickness], align=V_RIGHT);
+    cuboid([length, width + tolerance, thickness + tolerance], align=V_RIGHT);
 }
 
 module assembly(size, tolerance) {
     cutout = [6, 4, size.z];
-    hinge_length = 10;
+    hinge_length = 7;
+    hinge_radius = size.z / 2 * 0.5;
 
     zrot_copies(n=2, r=hinge_length / 2 - size.z / 2)
-    difference() {
-        hinged_plate(size, tolerance=0.1);
-        xmove(size.z / 2) yrot(180) hinge(r=size.z / 2, h=cutout.y + 2, tolerance=tolerance, thickness=size.z, width=cutout.y, length=hinge_length);
-        xmove(size.z / 2) yrot(90) hinge(r=size.z / 2, h=cutout.y + 2, tolerance=tolerance, thickness=size.z, width=cutout.y, length=hinge_length);
-        xmove(size.z / 2) yrot(-90) hinge(r=size.z / 2, h=cutout.y + 2, tolerance=tolerance, thickness=size.z, width=cutout.y, length=hinge_length);
-    }
-    xmove(-hinge_length / 2) hinge(r=size.z / 2, h=cutout.y + 2, tolerance=-tolerance, thickness=size.z, width=cutout.y, length=hinge_length);
+        difference() {
+            hinged_plate(size, tolerance=0.1);
+            xmove(size.z / 2)
+                yrot_copies([90, 180, 270])
+                    hinge(r=hinge_radius, h=cutout.y + 2, tolerance=tolerance, thickness=size.z, width=cutout.y, length=hinge_length);
+        }
+
+    xmove(-hinge_length / 2)
+        hinge(r=hinge_radius, h=cutout.y + 2, tolerance=-tolerance, thickness=size.z, width=cutout.y, length=hinge_length);
 }
 
 
-assembly(size=[20, 20, 3], tolerance=0.1);
+assembly(size=[10, 10, 3], tolerance=0.2);
+ymove(15) assembly(size=[10, 10, 3], tolerance=0.1);
