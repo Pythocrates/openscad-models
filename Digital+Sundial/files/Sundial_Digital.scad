@@ -24,6 +24,9 @@
 
 //*************************************************************//
 
+include <BOSL/constants.scad>
+use <BOSL/shapes.scad>
+use <BOSL/transforms.scad>
 
 // Choose what you want to print/display:
 // 1: the gnomon
@@ -194,7 +197,7 @@ module extrude_pixel(direction_angle_x, direction_angle_y, pixel_wall_angle_x, p
         hull() {
             rotate([-direction_angle_y, -direction_angle_x, 0])  // derotate the base pixel (to keep it flat at the bottom)
                 cube([pixel_size_x, pixel_size_y, epsilon_thickness], center=true);
-            translate([0, 0, top_pixel_location_z])
+            zmove(top_pixel_location_z)
                 cube([top_pixel_size_x, top_pixel_size_y, epsilon_thickness], center=true);
         }
 }
