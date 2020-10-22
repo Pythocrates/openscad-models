@@ -1,4 +1,3 @@
-
 //*************************************************************//
 //   [EN]  ---   DIGITAL SUNDIAL
 //   [FR]  ---   CADRAN SOLAIRE NUMERIQUE
@@ -24,9 +23,8 @@
 
 //*************************************************************//
 
-include <BOSL/constants.scad>
-use <BOSL/shapes.scad>
-use <BOSL/transforms.scad>
+include <gnomon.scad>
+
 
 // Choose what you want to print/display:
 // 1: the gnomon
@@ -34,604 +32,162 @@ use <BOSL/transforms.scad>
 // 3: the top part of the lid
 // 4: the bottom part of the lid
 // 10: display everything
-FLAG_PRINT = 1;
+PRINT_SELECTION = 10;
 
-FLAG_northern_hemisphere = 1;   // set to 1 for Northen Hemisphere, set to 0 for Southern Hemisphere
+FN = 120;
 
-FLAG_gnomon_brim = 0;   // Add a brim to the gnomon
-FLAG_bottom_lid_support = 1;    // Add some support structure for the lid teeth
+IS_NORTHERN_HEMISPHERE = true;  // set to true for Northen Hemisphere, set to false for Southern Hemisphere
 
+ADD_BOTTOM_LID_SUPPORT = true;    // Add some support structure for the lid teeth
 
 
 /* ************************************************************************/
 /* PARAMETERS *************************************************************/
 /*************************************************************************/
-epsilon_thickness = 0.02; // used to ensure openscad is not confused by almost identical surfaces
-
-gnomon_brim_thickness = 0.3;
-gnomon_brim_width = 10;
-gnomon_brim_gap = 0.1;
-
-FLAG_mirror_x_characters = 1;     // set to 0 if viewing directly the characters on the blocks, set to 1 if viewing their reflection of a surface
+// used to ensure openscad is not confused by almost identical surfaces
+EPSILON_THICKNESS = 0.02; 
+// set to 0 if viewing directly the characters on the blocks, set to 1 if viewing their reflection of a surface
+MIRROR_X_CHARACTERS = true;
 
 gnomon_radius = 30; // (change at your own risks !)
 
-pixel_size_x = gnomon_radius * 8.0 / 40.0;
-pixel_size_y = gnomon_radius * 1.0 / 40.0;
-pixel_pitch_x = gnomon_radius * 10.0 / 40.0;
-pixel_pitch_y = gnomon_radius * 10.0 / 40.0;
+PIXEL_SIZE = [gnomon_radius * 8.0 / 40.0, gnomon_radius * 1.0 / 40.0];
+PIXEL_PITCH = [gnomon_radius * 10.0 / 40.0, gnomon_radius * 10.0 / 40.0];
 
-grid_pixel_depth = 0.1;
+GRID_PIXEL_DEPTH = 0.1;
 
 nn = 40.0 / gnomon_radius;
 
-/* ************************************************************************/
-/* FONT *******************************************************************/
-/* ************************************************************************/
-/* index in the array   0 1 2 3 4 5 6 7 8 9 10 11           12
-   Characters:          0 1 2 3 4 5 6 7 8 9 :  {full white} {full dark}
-   Note:
-   1st coordinate in the array: the index in the array (see above)
-   2nd coordinate in the array: the Y (!!) coordinate
-   3nd coordinate in the array: the X coordinate
-*/
-font_nb_pixel_x = 4;    // 4 pixels wide
-font_nb_pixel_y = 6;    // 6 pixels high
 
-font_char = [[
-    [0,1,1,0],	//index 0: character "0"
-    [1,0,0,1],
-    [1,0,1,1],
-    [1,1,0,1],
-    [1,0,0,1],
-    [0,1,1,0],
-],[
-    [0,1,0,0],	//index 1: character "1"
-    [1,1,0,0],
-    [0,1,0,0],
-    [0,1,0,0],
-    [0,1,0,0],
-    [1,1,1,0],
-],[
-    [0,1,1,0],	//index 2: character "2"
-    [1,0,0,1],
-    [0,0,0,1],
-    [0,1,1,0],
-    [1,0,0,0],
-    [1,1,1,1],
-],[
-    [0,1,1,0],	//index 3: character "3"
-    [1,0,0,1],
-    [0,0,1,1],
-    [0,0,0,1],
-    [1,0,0,1],
-    [0,1,1,0],
-],[
-    [1,0,0,1],	//index 4: character "4"
-    [1,0,0,1],
-    [1,0,0,1],
-    [1,1,1,1],
-    [0,0,0,1],
-    [0,0,0,1],
-],[
-    [1,1,1,1],	//index 5: character "5"
-    [1,0,0,0],
-    [1,1,1,0],
-    [0,0,0,1],
-    [0,0,0,1],
-    [1,1,1,0],
-],[
-    [0,1,1,1],	//index 6: character "6"
-    [1,0,0,0],
-    [1,1,1,0],
-    [1,0,0,1],
-    [1,0,0,1],
-    [0,1,1,0],
-],[
-    [1,1,1,1],	//index 7: character "7"
-    [0,0,0,1],
-    [0,0,0,1],
-    [0,0,1,0],
-    [0,1,0,0],
-    [1,0,0,0],
-],[
-    [0,1,1,0],	//index 8: character "8"
-    [1,0,0,1],
-    [0,1,1,0],
-    [1,0,0,1],
-    [1,0,0,1],
-    [0,1,1,0],
-],[
-    [0,1,1,0],	//index 9: character "9"
-    [1,0,0,1],
-    [1,0,0,1],
-    [0,1,1,1],
-    [0,0,0,1],
-    [1,1,1,0],
-],[
-    [0,0,0,0],	//index 10: character ":"
-    [0,0,0,0],
-    [0,1,0,0],
-    [0,0,0,0],
-    [0,1,0,0],
-    [0,0,0,0],
-],[
-    [1,1,1,1],	//index 11: character {full white}
-    [1,1,1,1],
-    [1,1,1,1],
-    [1,1,1,1],
-    [1,1,1,1],
-    [1,1,1,1],
-],[
-    [0,0,0,0],	//index 12: character {full dark}
-    [0,0,0,0],
-    [0,0,0,0],
-    [0,0,0,0],
-    [0,0,0,0],
-    [0,0,0,0],
-]
-];
-
-
-/* ************************************************************************/
-/* MODULES ****************************************************************/
-/* ************************************************************************/
-
-/* ************************************************************************/
-module extrude_pixel(direction_angle_x, direction_angle_y, pixel_wall_angle_x, pixel_wall_angle_y) {
-    /* Extrude a pixel in a given direction.
-       input:
-       direction_angle_x: extrusion angle (from the normal to the pixel) in the x direction
-       direction_angle_y: extrusion angle (from the normal to the pixel) in the y direction
-       Return a (positive) solid that can then be substracted from another solid
-       (Origin at the center of the base pixel)
-    */
-    // compute geometry
-    top_pixel_location_z = 1.1 * gnomon_radius;     // ie: somewhere outside the gnomon
-    //    top_pixel_location_x = top_pixel_location_z * tan(direction_angle_x);
-    //    top_pixel_location_y = top_pixel_location_z * tan(direction_angle_y);
-    top_pixel_size_x = pixel_size_x + 2 * top_pixel_location_z * tan(pixel_wall_angle_x);    // account for the non_vertical pixel walls
-    top_pixel_size_y = pixel_size_y + 2 * top_pixel_location_z * tan(pixel_wall_angle_y);
-    // build (positive) geometry: extrude vertically then rotate
-    rotate([direction_angle_y, direction_angle_x, 0])     // rotate the whole extrusion in the chosen direction
-        hull() {
-            rotate([-direction_angle_y, -direction_angle_x, 0])  // derotate the base pixel (to keep it flat at the bottom)
-                cube([pixel_size_x, pixel_size_y, epsilon_thickness], center=true);
-            zmove(top_pixel_location_z)
-                cube([top_pixel_size_x, top_pixel_size_y, epsilon_thickness], center=true);
-        }
-}
-
-
-/* ************************************************************************/
-module extrude_character(font_index, direction_angle_x, direction_angle_y, pixel_wall_angle_x, pixel_wall_angle_y) {
-    /* Extrude a (pixelated) character in a given direction:
-       input:
-       font_index: the index of the character in the font array
-       direction_angle_x: extrusion angle (from the normal to the pixel) in the x direction
-       direction_angle_y: extrusion angle (from the normal to the pixel) in the y direction
-       Return a (positive) solid that can then be substracted from another solid
-       (Origin at the center of the base character)
-    */
-    for (tx=[0:(font_nb_pixel_x-1)]){
-        for (ty=[0:(font_nb_pixel_y-1)]){
-            if(FLAG_mirror_x_characters==0) { // Note: y is the 2nd coordinate, x is the 3rd (see definition of the Font)
-                if(font_char[font_index][ty][tx]==1) {
-                    translate([(tx-(font_nb_pixel_x-1)/2)*pixel_pitch_x, (ty-(font_nb_pixel_y-1)/2)*pixel_pitch_y,0]){
-                        extrude_pixel(direction_angle_x,direction_angle_y, pixel_wall_angle_x, pixel_wall_angle_y);
-                    }
-                }
-            }
-            else {  // mirror the characters across x
-                if(font_char[font_index][ty][font_nb_pixel_x-1-tx]==1) {
-                    translate([(tx-(font_nb_pixel_x-1)/2)*pixel_pitch_x, (ty-(font_nb_pixel_y-1)/2)*pixel_pitch_y,0]){
-                        extrude_pixel(direction_angle_x,direction_angle_y, pixel_wall_angle_x, pixel_wall_angle_y);
-                    }
-                }
-            }
-
-        }}
-}
-
-
-/* ************************************************************************/
-module build_create_pixel_grid(pixel_depth, ID_column_OFF=[]) {
-    /* Create a grid where each intersection row/column is a potential pixel
-Input:
-pixel_depth: the depth of the pixel grid
-ID_column_OFF: list all the columns that should be left OFF (eg not built), exemple: [0,1]
-Return a (positive) solid that can then be substracted from another solid
-(Origin at the center of the base character)
-*/
-    if (len(ID_column_OFF)<font_nb_pixel_x) {
-        intersection(){
-            cube([(font_nb_pixel_x+1)*pixel_pitch_x,(font_nb_pixel_y)*pixel_pitch_y,pixel_depth*3], center=true);  // the column imprint only goes from the bottom to the top row
-            // Draw the columns
-            union(){
-                for (tx=[0:(font_nb_pixel_x-1)]){
-                    FLAG_draw_this_column = len( search(tx, ID_column_OFF) ) ==  0;
-                    if (FLAG_draw_this_column ){
-                        translate([(tx-(font_nb_pixel_x-1)/2)*pixel_pitch_x, 0,pixel_depth/2])
-                            //                        cube([pixel_size_x,gnomon_radius*3,pixel_depth+epsilon_thickness], center=true);
-                            cube([0.1,gnomon_radius*3,pixel_depth], center=true);
-                    }
-                }
-            }
-        }
-    }
-    //Draw the rows
-    union(){
-        for (ty=[0:(font_nb_pixel_y-1)]){
-            translate([0, (ty-(font_nb_pixel_y-1)/2)*pixel_pitch_y,pixel_depth/2])
-                //                    cube([gnomon_radius*30,1.5*pixel_size_y,pixel_depth+epsilon_thickness], center=true);
-                cube([gnomon_radius*30,0.1,pixel_depth], center=true);
-        }
-    }
-}
-
-/* ************************************************************************/
-module build_block(gnomon_thickness, char_list, char_angle_x, char_angle_y, pixel_wall_angle_x, pixel_wall_angle_y) {
-    /* Build a block with a set of characters */
-    difference(){
-        union(){
-            // Build The gnomon shape
-            intersection(){
-                translate([0,0,gnomon_radius/2])
-                    cube([gnomon_thickness,2*gnomon_radius,gnomon_radius], center=true);
-                translate([0,0,0])
-                    rotate([90,0,90]) cylinder(r=gnomon_radius, h=gnomon_thickness, center=true, $fn=100);
-            }
-        }
-
-        // Carve the light guides for each number
-        for (ti = [0:(len(char_list)-1)]){
-            extrude_character(char_list[ti],char_angle_x[ti],char_angle_y[ti], pixel_wall_angle_x, pixel_wall_angle_y);
-        }
-    }
-    // Add a brim
-    if (FLAG_gnomon_brim == 1) {
-#        color("green"){
-    difference(){
-        cube([gnomon_thickness, gnomon_radius*2+gnomon_brim_width*2, gnomon_brim_thickness],center=true);
-        cube([10*gnomon_thickness, gnomon_radius*2+gnomon_brim_gap*2, 10*gnomon_brim_thickness],center=true);
-    }
-}}
-}
-
-/* ************************************************************************/
-module build_spacer_block(gnomon_thickness) {
-    /* Build a spacer block*/
-    color("red"){
-        difference(){
-            // The gnomon shape
-            intersection(){
-                translate([0,0,gnomon_radius/2])
-                    cube([gnomon_thickness+epsilon_thickness,2*gnomon_radius,gnomon_radius], center=true);
-                translate([0,0,0])
-                    rotate([90,0,90]) cylinder(r=gnomon_radius, h=gnomon_thickness+epsilon_thickness, center=true, $fn=100);
-            }
-            // The pixel grid
-            build_create_pixel_grid(grid_pixel_depth, ID_column_OFF=[0,1,2,3,4]);
-        }
-    }
-    // Add a brim
-    if (FLAG_gnomon_brim == 1) {
-#        color("green"){
-    difference(){
-        cube([gnomon_thickness, gnomon_radius*2+gnomon_brim_width*2, gnomon_brim_thickness],center=true);
-        cube([10*gnomon_thickness, gnomon_radius*2+gnomon_brim_gap*2, 10*gnomon_brim_thickness],center=true);
-    }
-}}
-
-
-}
-
-/* ************************************************************************/
-module build_round_top_block() {
-    gnomon_thickness = gnomon_radius;
-    /* Build a round top block*/
-    color("green"){
-        intersection(){
-            translate([0,0,gnomon_radius/2])
-                cube([gnomon_thickness,2*gnomon_radius,gnomon_radius], center=true);
-            translate([gnomon_radius/2,0,0])
-                scale([0.3,1,1]) sphere(r=gnomon_radius, center=true, $fn=100);
-        }
-    }
-
-    // Add a brim
-    if (FLAG_gnomon_brim == 1) {
-#        color("green"){
-    difference(){
-        translate([0.35*gnomon_thickness-gnomon_brim_width/2,0,0]) cube([0.3*gnomon_thickness+gnomon_brim_width, gnomon_radius*2+gnomon_brim_width*2, gnomon_brim_thickness],center=true);
-        translate([gnomon_radius/2,0,0])
-            minkowski(){
-                scale([0.3,1,1]) sphere(r=gnomon_radius, center=true, $fn=100);
-                sphere(r=gnomon_brim_gap, center=true, $fn=10);
-            }
-    }
-}}
-
-}
-/* ************************************************************************/
-module Block_hours_tens() {
-    color("blue"){
-        gnomon_thickness = gnomon_radius*45.0/40.0; //45;
-        pixel_wall_angle_x = 0;         // [degrees] angle of the walls along the x direction
-        pixel_wall_angle_y = 6.0;         // [degrees] angle of the walls along the y direction
-        char_angle_x = [0,0,0,0,0,0,0];
-        char_angle_y = [-45,-30,-15,0,15,30,45];
-        char_list = [1,1,1,1,1,1,1];
-        difference(){
-            build_block(gnomon_thickness, char_list, char_angle_x, char_angle_y, pixel_wall_angle_x, pixel_wall_angle_y);
-            build_create_pixel_grid(grid_pixel_depth, ID_column_OFF=[]);
-        }
-    }}
-
-/* ************************************************************************/
-module Block_hours_units() {
-    color("blue"){
-        gnomon_thickness = gnomon_radius*45.0/40.0; //45;
-        pixel_wall_angle_x = 0;         // [degrees] angle of the walls along the x direction
-        pixel_wall_angle_y = 6.0;         // [degrees] angle of the walls along the y direction
-        char_angle_x = [0,0,0,0,0,0,0];
-        char_angle_y = [-45,-30,-15,0,15,30,45];
-        char_list = [0,1,2,3,4,5,6];
-        difference(){
-            build_block(gnomon_thickness, char_list, char_angle_x, char_angle_y, pixel_wall_angle_x, pixel_wall_angle_y);
-            build_create_pixel_grid(grid_pixel_depth, ID_column_OFF=[]);
-        }
-    }}
-
-/* ************************************************************************/
-module Block_minutes_tens() {
-    color("blue"){
-        gnomon_thickness = gnomon_radius*45.0/40.0; //45;
-        pixel_wall_angle_x = 0;         // [degrees] angle of the walls along the x direction
-        pixel_wall_angle_y = 1.0;         // [degrees] angle of the walls along the y direction
-        char_angle_x = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0];
-        char_angle_y = [-50,-45,-40, -35,-30,-25, -20,-15,-10, -5,0,5, 10,15,20, 25,30,35, 40];
-        char_list = [0,2,4, 0,2,4, 0,2,4, 0,2,4, 0,2,4, 0,2,4, 0];
-        difference(){
-            build_block(gnomon_thickness, char_list, char_angle_x, char_angle_y, pixel_wall_angle_x, pixel_wall_angle_y);
-            build_create_pixel_grid(grid_pixel_depth, ID_column_OFF=[]);
-        }
-    }}
-
-/* ************************************************************************/
-module Block_minutes_units() {
-    color("blue"){
-        gnomon_thickness = gnomon_radius*45.0/40.0; //45;
-        pixel_wall_angle_x = 0;         // [degrees] angle of the walls along the x direction
-        pixel_wall_angle_y = 8.0;         // [degrees] angle of the walls along the y direction
-        char_angle_x = [0,0,0,0,0,0,0];
-        char_angle_y = [-45,-30,-15,0,15,30,45];
-        char_list = [0,0,0,0,0,0,0];
-        difference(){
-            build_block(gnomon_thickness, char_list, char_angle_x, char_angle_y, pixel_wall_angle_x, pixel_wall_angle_y);
-            build_create_pixel_grid(grid_pixel_depth, ID_column_OFF=[]);
-        }
-    }}
-
-/* ************************************************************************/
-module Block_semicolon() {
-    color("blue"){
-        gnomon_thickness = gnomon_radius*25.0/40.0; //25;
-        pixel_wall_angle_x = 0;         // [degrees] angle of the walls along the x direction
-        pixel_wall_angle_y = 8.0;         // [degrees] angle of the walls along the y direction
-        char_angle_x = [0,0,0,0,0,0,0];
-        char_angle_y = [-45,-30,-15,0,15,30,45];
-        char_list = [10,10,10,10,10,10,10];
-        difference(){
-            build_block(gnomon_thickness, char_list, char_angle_x, char_angle_y, pixel_wall_angle_x, pixel_wall_angle_y);
-            build_create_pixel_grid(grid_pixel_depth, ID_column_OFF=[3]);
-        }
-    }}
-
-/* ************************************************************************/
 module Block_rotating_base_upper() {
     /* Build the upper part of the rotating base */
     gnomon_thickness = gnomon_radius;
     Screw_hole_diameter = 6.5;
-    Nut_width_blocking = 8.8+1.3;
+    Nut_width_blocking = 8.8 + 1.3;
     Nut_width_non_blocking = 11.2;
     Washer_Diameter = 11.9;
     Washer_thickness = 1.3;
-    color("green"){
-        difference(){
-            // Build The gnomon shape
-            union(){
-                intersection(){
-                    translate([0,0,gnomon_radius/2])
-                        cube([2/3*gnomon_thickness,2*gnomon_radius,gnomon_radius], center=true);
-                    translate([0,0,0])
-                        rotate([90,0,90]) cylinder(r=gnomon_radius, h=gnomon_thickness, center=true, $fn=100);
-                }
-            }
-            // The negative space for the screw, nut and washer
-            translate([0,0,Washer_Diameter/2+3])
-                rotate([90,0,90]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
-            translate([gnomon_thickness*(0.45-1/3),0,Washer_Diameter/2+3])
-                rotate([90,0,90]) cylinder(r=Washer_Diameter/2+4, h=Washer_thickness+2, center=true, $fn=100);
-            translate([gnomon_thickness*(0.45-1/3),0,0])
-                cube([Washer_thickness+2,Washer_Diameter+8, 2*(Washer_Diameter/2+3)], center=true);
-            translate([gnomon_thickness*(0.4-2/3),0,0])
-                cube([gnomon_thickness*0.8+1,Nut_width_blocking, 2*(Washer_Diameter/2+3)], center=true);
-            intersection(){
-                translate([gnomon_thickness*(0.45-2/3),0,Washer_Diameter/2+3])
-                    cube([gnomon_thickness, 2*(Nut_width_non_blocking/2+1), 2*(Nut_width_non_blocking/2+1)],center=true);
-                translate([gnomon_thickness*(0.45-2/3),0,Washer_Diameter/2+3-epsilon_thickness])
-                    cube([gnomon_thickness*2/3+1,Nut_width_blocking, gnomon_radius], center=true);
-            }
-            translate([gnomon_thickness*(0.45-2/3),0,0])
-                cube([gnomon_thickness*2/3+1,Nut_width_blocking+1, 1], center=true);
-        }
-    }
 
-    // Add a brim
-    if (FLAG_gnomon_brim == 1) {
-#        color("green"){
-    difference(){
-        translate([gnomon_brim_width/2,0,0,]) cube([2/3*gnomon_thickness+gnomon_brim_width, gnomon_radius*2+gnomon_brim_width*2, gnomon_brim_thickness],center=true);
-        translate([-2/3*gnomon_thickness/2,0,0,]) cube([2*2/3*gnomon_thickness+gnomon_brim_gap*2, gnomon_radius*2+gnomon_brim_gap*2, 10*gnomon_brim_thickness],center=true);
+    difference() {
+        // Build The gnomon shape
+        union() {
+            intersection(){
+                zmove(gnomon_radius / 2) cuboid([2 / 3 * gnomon_thickness, 2 * gnomon_radius, gnomon_radius]);
+                xcyl(r=gnomon_radius, h=gnomon_thickness, $fn=FN);
+            }
+        }
+        // The negative space for the screw, nut and washer
+        zmove(Washer_Diameter / 2 + 3) ycyl(r=Screw_hole_diameter / 2, h=2 * gnomon_thickness, $fn=FN);
+        translate([gnomon_thickness * (0.45 - 1 / 3), 0, Washer_Diameter / 2 + 3])
+            ycyl(r=Washer_Diameter / 2 + 4, h=Washer_thickness + 2, $fn=FN);
+        xmove(gnomon_thickness * (0.45 - 1 / 3))
+            cuboid([Washer_thickness + 2, Washer_Diameter + 8, 2 * (Washer_Diameter / 2 + 3)]);
+        xmove(gnomon_thickness * (0.4 - 2 / 3))
+            cuboid([gnomon_thickness * 0.8 + 1, Nut_width_blocking, 2 * (Washer_Diameter / 2 + 3)]);
+        intersection() {
+            translate([gnomon_thickness * (0.45 - 2 / 3),0,Washer_Diameter/2+3])
+                cuboid([gnomon_thickness, 2*(Nut_width_non_blocking/2+1), 2*(Nut_width_non_blocking/2+1)]);
+            translate([gnomon_thickness * (0.45 - 2 / 3), 0, Washer_Diameter / 2 + 3 - EPSILON_THICKNESS])
+                cuboid([gnomon_thickness * 2 / 3 + 1, Nut_width_blocking, gnomon_radius]);
+        }
+        xmove(gnomon_thickness * (0.45 - 2 / 3)) cuboid([gnomon_thickness*2/3+1,Nut_width_blocking+1, 1]);
     }
-}}
 }
 
-/* ************************************************************************/
+
 module Block_rotating_base_mid() {
     /* Build the mid part of the rotating base */
-    gnomon_thickness = 1.3*gnomon_radius;
+    gnomon_thickness = 1.3 * gnomon_radius;
     Screw_hole_diameter = 6.5;
     Nut_width_blocking = 8.8;
     Nut_width_non_blocking = 11.2;
     Washer_Diameter = 11.9;
     Washer_thickness = 1.3;
-    color("red"){
 
-        // The connection to the gnomon
-        difference(){
-            union(){
-                // The gnomon shape
-                intersection(){
-                    translate([0,0,gnomon_radius/2])
-                        cube([gnomon_thickness,2*gnomon_radius,gnomon_radius], center=true);
-                    translate([0,0,0])
-                        rotate([90,0,90]) cylinder(r=gnomon_radius, h=gnomon_thickness, center=true, $fn=100);
-                }
-                // The connection to the base
-                intersection(){
-                    translate([gnomon_thickness*(1-(1-0.7)/2.0),0,gnomon_radius/2])
-                        cube([gnomon_thickness*0.7, 0.8*gnomon_radius, gnomon_radius], center=true);
-                    translate([gnomon_thickness/2.0+gnomon_radius,0,0])
-                        rotate([90,0,90]) cylinder(r=gnomon_radius, h=2*gnomon_thickness, center=true, $fn=100);
-
-                }
+    // The connection to the gnomon
+    difference() {
+        union() {
+            // The gnomon shape
+            intersection() {
+                zmove(gnomon_radius / 2) cuboid([gnomon_thickness, 2 * gnomon_radius, gnomon_radius]);
+                xcyl(r=gnomon_radius, h=gnomon_thickness, $fn=FN);
             }
-            // The negative space for the screw and washer
-            translate([0,0,Washer_Diameter/2+3])
-                rotate([90,0,90]) cylinder(r=Screw_hole_diameter/2, h=20*gnomon_thickness, center=true, $fn=100);
-            translate([gnomon_thickness*(0.5-4/8),0,Washer_Diameter/2+2.5])
-                cube([gnomon_thickness*(6/8), 2*(Washer_Diameter/2+2), 2*(Washer_Diameter/2+3)],center=true);
-            translate([gnomon_thickness*(0.5-4/8),0,Washer_Diameter+4])
-                rotate([90,0,0]) scale([0.37,0.2,1]) cylinder(r=gnomon_thickness, h=2*(Washer_Diameter/2+2), center=true, $fn=100);
-            translate([gnomon_thickness,0,gnomon_radius/2.0])
-                rotate([90,0,0]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
-            /*        // Small cut to reduce warping issues
-                      translate([gnomon_thickness,0,gnomon_radius])
-                      cube([1,2*gnomon_thickness,gnomon_radius], center=true);
-                      */
+            // The connection to the base
+            intersection(){
+                translate([gnomon_thickness * (1 - (1 - 0.7) / 2.0), 0, gnomon_radius / 2])
+                    cuboid([gnomon_thickness * 0.7, 0.8 * gnomon_radius, gnomon_radius]);
+                xmove(gnomon_thickness / 2.0 + gnomon_radius) xcyl(r=gnomon_radius, h=2*gnomon_thickness, $fn=FN);
+            }
         }
+        // The negative space for the screw and washer
+        zmove(Washer_Diameter / 2 + 3)
+            xcyl(d=Screw_hole_diameter, h=2.5 * gnomon_thickness, $fn=FN);
+        translate([gnomon_thickness * (0.5 - 4 / 8), 0, Washer_Diameter / 2 + 2.5])
+            cuboid([gnomon_thickness * 6 / 8, 2 * (Washer_Diameter / 2 + 2), 2 * (Washer_Diameter / 2 + 3)]);
+        translate([gnomon_thickness * (0.5 - 4 / 8), 0, Washer_Diameter + 4])
+            scale([0.37, 1, 0.2]) ycyl(r=gnomon_thickness, h=2 * (Washer_Diameter / 2 + 2), $fn=FN);
+        translate([gnomon_thickness, 0, gnomon_radius / 2.0])
+            ycyl(d=Screw_hole_diameter, h=2 * gnomon_thickness, $fn=FN);
     }
-
-
-
 }
 
 
-/* ************************************************************************/
 module Block_jar_lid_top() {
-    gnomon_thickness = 2*gnomon_radius;
+    gnomon_thickness = 2 * gnomon_radius;
     Screw_hole_diameter = 6.5;
     Nut_width_blocking = 8.8;
     Nut_width_non_blocking = 11.2;
     Washer_Diameter = 11.9;
     Washer_thickness = 1.3;
     Base_Wall_thickness = 3.0;
-    box_width = gnomon_radius*4;
-    box_length = gnomon_radius*4;
-    box_height = gnomon_radius*2;
+    box_width = gnomon_radius * 4;
+    box_length = gnomon_radius * 4;
+    box_height = gnomon_radius * 2;
     Base_diameter = 70;
-    Connector_x_offset = 10+5;
+    Connector_x_offset = 10 + 5;
 
     // The Connector
-    difference(){
+    difference() {
         //General shape
-        hull(){
-            translate([0,0,gnomon_radius/2.0])
-                rotate([90,0,0]) cylinder(r=gnomon_radius/2.0*1.2, h=gnomon_thickness*0.65, center=true, $fn=100);
-            translate([Connector_x_offset,0,-0.75*gnomon_radius/2.0-Base_Wall_thickness/2]) rotate([0,0,0]) cylinder(r=Base_diameter/2 ,h=Base_Wall_thickness, center=true, $fn=100);
+        zmove(-0.75 * gnomon_radius / 2.0 - Base_Wall_thickness)
+        hull() {
+            zmove(0.875 * gnomon_radius + Base_Wall_thickness)
+                ycyl(d=gnomon_radius * 1.2, h=gnomon_thickness * 0.65, $fn=FN);
+            translate([Connector_x_offset, 0, 0])
+                zcyl(d=Base_diameter, h=Base_Wall_thickness, align=V_TOP, $fn=FN);
         }
         // Space to rotate the gnomon
-        translate([0,0,gnomon_radius/2.0])
-            rotate([90,0,0]) cylinder(r=gnomon_radius*0.7, h=0.8*gnomon_radius+2*epsilon_thickness, center=true, $fn=100);
-        translate([-gnomon_thickness*10,0,9.94*gnomon_radius])
-            cube([gnomon_thickness*20, 0.8*gnomon_radius+2*epsilon_thickness, 20*gnomon_radius], center=true);
-        translate([-gnomon_thickness*10,0,-0.06*gnomon_radius])
-            rotate([0,90,0]) scale([0.3,1,1]) cylinder(r=0.4*gnomon_radius, h=gnomon_thickness*20, center=true, $fn=100);
-        translate([gnomon_thickness*10,0,0.65*gnomon_radius])
-            rotate([0,90,0]) scale([1.5,1,1]) cylinder(r=0.4*gnomon_radius, h=gnomon_thickness*20, center=true, $fn=100);
+        zmove(gnomon_radius / 2.0)
+            ycyl(r=gnomon_radius * 0.7, h=0.8 * gnomon_radius + 2 * EPSILON_THICKNESS, $fn=FN);
+        translate([-gnomon_thickness * 10, 0, 9.94 * gnomon_radius])
+            cuboid([gnomon_thickness * 20, 0.8 * gnomon_radius + 2 * EPSILON_THICKNESS, 20 * gnomon_radius]);
+        translate([-gnomon_thickness * 10, 0, -0.06 * gnomon_radius])
+            scale([1, 1, 0.3]) xcyl(r=0.4 * gnomon_radius, h=gnomon_thickness * 20, $fn=FN);
+        translate([gnomon_thickness*10, 0, 0.65 * gnomon_radius])
+            scale([1, 1, 1.5]) xcyl(r=0.4 * gnomon_radius, h=gnomon_thickness * 20, $fn=FN);
         // Hole for the top screw
-        translate([0,0,gnomon_radius/2.0])
-            rotate([90,0,0]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
+        zmove(gnomon_radius / 2.0)
+            ycyl(d=Screw_hole_diameter, h=gnomon_thickness, $fn=FN);
         // Flat surface for the top screw & washer/nut
-        translate([0,-gnomon_thickness*(1+0.5/2+0.25/2-0.01)+2,gnomon_radius/2.0])
-            rotate([90,0,0]) cylinder(r=1.5*Washer_Diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
-        translate([0,gnomon_thickness*(1+0.5/2+0.25/2-0.01)-2,gnomon_radius/2.0])
-            rotate([90,0,0]) cylinder(r=1.5*Washer_Diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
+        translate([0, -gnomon_thickness * (1 + 0.5 / 2 + 0.25 / 2 - 0.01) + 2, gnomon_radius / 2.0])
+            ycyl(d=1.5 * Washer_Diameter, h=2 * gnomon_thickness, $fn=FN);
+        translate([0, gnomon_thickness * (1 + 0.5 / 2 + 0.25 / 2 - 0.01) - 2, gnomon_radius / 2.0])
+            ycyl(d=1.5 * Washer_Diameter, h=2 * gnomon_thickness, $fn=FN);
         // Holes for the two bottom screws
-        translate([Connector_x_offset+1.1*Base_diameter/6,0,gnomon_radius/2.0])
-            rotate([0,0,0]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
-        translate([Connector_x_offset-1.1*Base_diameter/6,0,gnomon_radius/2.0])
-            rotate([0,0,0]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
+        translate([Connector_x_offset + 1.1 * Base_diameter / 6, 0, gnomon_radius / 2.0])
+            zcyl(d=Screw_hole_diameter, h=gnomon_thickness, $fn=FN);
+        translate([Connector_x_offset - 1.1 * Base_diameter / 6, 0, gnomon_radius / 2.0])
+            zcyl(d=Screw_hole_diameter, h=gnomon_thickness, $fn=FN);
         // Flat surfaces for the two bottom screws
-        translate([Connector_x_offset+1.1*Base_diameter/6,0,gnomon_radius*1.63-Base_Wall_thickness+Base_Wall_thickness])
-            rotate([0,0,0]) cylinder(r=1.5*Washer_Diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
-        translate([Connector_x_offset-1.1*Base_diameter/6,0,gnomon_radius*1.63-Base_Wall_thickness+Base_Wall_thickness])
-            rotate([0,0,0]) cylinder(r=1.5*Washer_Diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
+        translate([Connector_x_offset + 1.1 * Base_diameter / 6, 0, gnomon_radius * 1.63])
+            zcyl(d=1.5 * Washer_Diameter, h= 2 * gnomon_thickness, $fn=FN);
+        translate([Connector_x_offset - 1.1 * Base_diameter / 6, 0, gnomon_radius * 1.63])
+            zcyl(d=1.5 * Washer_Diameter, h = 2 * gnomon_thickness, $fn=FN);
     }
 
 }
 
 
-/* ************************************************************************/
-module Block_jar_lid_bottom_old() {
-    //Dimensions for a Bonne Maman jam jar
-    Lid_diameter_outside = 88;
-    Lid_diameter_inside = 82;
-    Lid_thickness = 3.0;
-    Lid_skirt_height_under_teeth = 0;
-    Lid_skirt_full_height = 15 +Lid_thickness +Lid_skirt_height_under_teeth;
-    Teeth_thickness = 2.0;
-    Teeth_depth = 1.7;
-    Teeth_length = 10.0;
-    Connector_x_offset = 10;
-    Base_diameter = 70;
-    gnomon_thickness = 2*gnomon_radius;
-    Screw_hole_diameter = 6.5;
-
-    translate([Connector_x_offset, 0,0]) {
-        //The skirt of the lid
-        difference(){
-            translate([0,0,-Lid_skirt_full_height/2]) rotate([0,0,0]) cylinder(r=Lid_diameter_outside/2 ,h=Lid_skirt_full_height, center=true, $fn=100);
-            translate([0,0,-Lid_skirt_full_height/2]) rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2 ,h=2*Lid_skirt_full_height, center=true, $fn=100);
-        }
-        //The Teeth
-        translate([0,0,-Lid_skirt_full_height+Teeth_thickness/2+Lid_skirt_height_under_teeth]) intersection(){
-            difference(){
-                rotate([0,0,0]) cylinder(r=(0.5*Lid_diameter_inside+0.5*Lid_diameter_outside)/2 ,h=Teeth_thickness, center=true, $fn=100);
-                rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2-Teeth_depth ,h=2*Teeth_thickness, center=true, $fn=100);
-            }
-            union(){
-                rotate([0,0,0]) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
-                rotate([0,0,60]) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
-                rotate([0,0,120]) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
-            }
-        }
-        //The flat part of the lid
-        difference(){
-            translate([0,0,-Lid_thickness/2]) rotate([0,0,0]) cylinder(r=Lid_diameter_outside/2 ,h=Lid_thickness, center=true, $fn=100);
-            // Holes for the two screws
-            translate([1.1*Base_diameter/6,0,gnomon_radius/2.0])
-                rotate([0,0,0]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
-            translate([-1.1*Base_diameter/6,0,gnomon_radius/2.0])
-                rotate([0,0,0]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
-        }
-
-    }
-}
-
-/* ************************************************************************/
 module Block_jar_lid_bottom() {
     //Dimensions for a Bonne Maman jam jar
     Lid_diameter_outside = 88;
@@ -694,9 +250,9 @@ module Block_jar_lid_bottom() {
                 rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2-Teeth_depth ,h=2*Teeth_thickness, center=true, $fn=100);
             }
             union(){
-                rotate([0,0,0]) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
-                rotate([0,0,60]) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
-                rotate([0,0,120]) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
+                cuboid([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness]);
+                zrot(60) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
+                zrot(120) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
             }
         }
 
@@ -705,8 +261,8 @@ module Block_jar_lid_bottom() {
             translate([0,0,-Lid_thickness]) rotate_extrude(convexity = 10, $fn = 100) {
                 square([Lid_diameter_outside/2-Lid_thickness,Lid_thickness], center=false);
                 intersection(){
-                    translate([Lid_diameter_outside/2-Lid_thickness+epsilon_thickness,0,-Lid_thickness]) scale([1,1]) circle(r=Lid_thickness, center=true);
-                    square([Lid_diameter_outside/2+epsilon_thickness,Lid_thickness+epsilon_thickness], center=false);
+                    translate([Lid_diameter_outside/2-Lid_thickness+EPSILON_THICKNESS,0,-Lid_thickness]) scale([1,1]) circle(r=Lid_thickness);
+                    square([Lid_diameter_outside/2+EPSILON_THICKNESS,Lid_thickness+EPSILON_THICKNESS], center=false);
                 }
             }
             // Holes for the two screws
@@ -720,7 +276,7 @@ module Block_jar_lid_bottom() {
 
 
         // Support structure for the teeth
-        if (FLAG_bottom_lid_support == 1) {
+        if (ADD_BOTTOM_LID_SUPPORT) {
             color("red") difference(){
                 translate([0,0,-Lid_skirt_full_height/2-Lid_thickness/2-Support_vertical_gap-Support_height_above/2]) rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2-Teeth_depth-Support_horizontal_gap,h=Lid_skirt_full_height-Lid_thickness+Support_height_above, center=true, $fn=100);
                 translate([0,0,-Lid_skirt_full_height/2-Lid_thickness]) rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2-Teeth_depth-Support_horizontal_gap-Support_thickness ,h=2*Lid_skirt_full_height+2*Support_height_above, center=true, $fn=100);
@@ -757,7 +313,7 @@ module Gnomon_Bottom_Connector(nn) {
 }
 /* ************************************************************************/
 module Central_Connector(nn) {
-    color("red") translate([205/nn,0,0]) Block_rotating_base_mid();
+    color("red") xmove(205 / nn) Block_rotating_base_mid();
 }
 /* ************************************************************************/
 module Jar_Lid_Top(nn) {
@@ -774,7 +330,7 @@ module Jar_Lid_Bottom(nn) {
 /* ************************************************************************/
 module Gnomon(nn) {
     color("green"){
-        if (FLAG_northern_hemisphere==1){
+        if (IS_NORTHERN_HEMISPHERE){
             translate([5,0,0])    Gnomon_Digits(nn);
             translate([11,0,0])   Gnomon_Rounded_Top(nn);
             translate([0,0,0])    Gnomon_Bottom_Connector(nn);
@@ -792,15 +348,19 @@ module Gnomon(nn) {
 
 // Choose what you want to print/display:
 // 1: the gnomon
-if (FLAG_PRINT == 1) Gnomon(nn);
+if (PRINT_SELECTION == 1) Gnomon(nn);
 // 2: the central connector piece
-if (FLAG_PRINT == 2) translate([-8,0,0]) Central_Connector(nn);
+if (PRINT_SELECTION == 2) translate([-8,0,0]) Central_Connector(nn);
 // 3: the top part of the lid
-if (FLAG_PRINT == 3) translate([-14,0,0]) Jar_Lid_Top(nn);
+if (PRINT_SELECTION == 3)
+    Block_jar_lid_top();
+    //translate([-14,0,0]) Jar_Lid_Top(nn);
 // 4: the bottom part of the lid
-if (FLAG_PRINT == 4) translate([-9,0,3.75]) rotate([180,0,0]) Jar_Lid_Bottom(nn);
+if (PRINT_SELECTION == 4) translate([-9,0,3.75]) rotate([180,0,0]) Jar_Lid_Bottom(nn);
+// 5: the hours tens block
+if (PRINT_SELECTION == 5) Block_hours_tens();
 // 10: everything
-if (FLAG_PRINT == 10)
+if (PRINT_SELECTION == 10)
 {
     Gnomon(nn);
     translate([-8,0,0]) Central_Connector(nn);
