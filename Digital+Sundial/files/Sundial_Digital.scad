@@ -32,7 +32,8 @@ include <gnomon.scad>
 // 3: the top part of the lid
 // 4: the bottom part of the lid
 // 10: display everything
-PRINT_SELECTION = 10;
+PRINT_SELECTION =
+3;
 
 FN = 120;
 
@@ -135,56 +136,53 @@ module Block_rotating_base_mid() {
 module Block_jar_lid_top() {
     gnomon_thickness = 2 * gnomon_radius;
     Screw_hole_diameter = 6.5;
-    Nut_width_blocking = 8.8;
-    Nut_width_non_blocking = 11.2;
     Washer_Diameter = 11.9;
-    Washer_thickness = 1.3;
     Base_Wall_thickness = 3.0;
-    box_width = gnomon_radius * 4;
-    box_length = gnomon_radius * 4;
-    box_height = gnomon_radius * 2;
     Base_diameter = 70;
+    Base_radius = Base_diameter / 2;
     Connector_x_offset = 10 + 5;
+    Connector_y_offset = 0.875 * gnomon_radius + Base_Wall_thickness;
 
     // The Connector
     difference() {
         //General shape
-        zmove(-0.75 * gnomon_radius / 2.0 - Base_Wall_thickness)
         hull() {
-            zmove(0.875 * gnomon_radius + Base_Wall_thickness)
-                ycyl(d=gnomon_radius * 1.2, h=gnomon_thickness * 0.65, $fn=FN);
-            translate([Connector_x_offset, 0, 0])
-                zcyl(d=Base_diameter, h=Base_Wall_thickness, align=V_TOP, $fn=FN);
+            xmove(-Connector_x_offset) 
+                zmove(Connector_y_offset)
+                    ycyl(d=gnomon_radius * 1.2, h=gnomon_thickness * 0.65, $fn=FN);
+            zcyl(d=Base_diameter, h=Base_Wall_thickness, align=V_TOP, $fn=FN);
         }
-        // Space to rotate the gnomon
-        zmove(gnomon_radius / 2.0)
-            ycyl(r=gnomon_radius * 0.7, h=0.8 * gnomon_radius + 2 * EPSILON_THICKNESS, $fn=FN);
-        translate([-gnomon_thickness * 10, 0, 9.94 * gnomon_radius])
-            cuboid([gnomon_thickness * 20, 0.8 * gnomon_radius + 2 * EPSILON_THICKNESS, 20 * gnomon_radius]);
-        translate([-gnomon_thickness * 10, 0, -0.06 * gnomon_radius])
-            scale([1, 1, 0.3]) xcyl(r=0.4 * gnomon_radius, h=gnomon_thickness * 20, $fn=FN);
-        translate([gnomon_thickness*10, 0, 0.65 * gnomon_radius])
-            scale([1, 1, 1.5]) xcyl(r=0.4 * gnomon_radius, h=gnomon_thickness * 20, $fn=FN);
-        // Hole for the top screw
-        zmove(gnomon_radius / 2.0)
-            ycyl(d=Screw_hole_diameter, h=gnomon_thickness, $fn=FN);
-        // Flat surface for the top screw & washer/nut
-        translate([0, -gnomon_thickness * (1 + 0.5 / 2 + 0.25 / 2 - 0.01) + 2, gnomon_radius / 2.0])
-            ycyl(d=1.5 * Washer_Diameter, h=2 * gnomon_thickness, $fn=FN);
-        translate([0, gnomon_thickness * (1 + 0.5 / 2 + 0.25 / 2 - 0.01) - 2, gnomon_radius / 2.0])
-            ycyl(d=1.5 * Washer_Diameter, h=2 * gnomon_thickness, $fn=FN);
-        // Holes for the two bottom screws
-        translate([Connector_x_offset + 1.1 * Base_diameter / 6, 0, gnomon_radius / 2.0])
-            zcyl(d=Screw_hole_diameter, h=gnomon_thickness, $fn=FN);
-        translate([Connector_x_offset - 1.1 * Base_diameter / 6, 0, gnomon_radius / 2.0])
-            zcyl(d=Screw_hole_diameter, h=gnomon_thickness, $fn=FN);
-        // Flat surfaces for the two bottom screws
-        translate([Connector_x_offset + 1.1 * Base_diameter / 6, 0, gnomon_radius * 1.63])
-            zcyl(d=1.5 * Washer_Diameter, h= 2 * gnomon_thickness, $fn=FN);
-        translate([Connector_x_offset - 1.1 * Base_diameter / 6, 0, gnomon_radius * 1.63])
-            zcyl(d=1.5 * Washer_Diameter, h = 2 * gnomon_thickness, $fn=FN);
-    }
 
+        xspread(1.1 * Base_diameter / 3) {
+            // Flat surfaces for the two bottom screws
+            zmove(Base_Wall_thickness) zcyl(d=1.5 * Washer_Diameter, h=gnomon_thickness, align=V_TOP, $fn=FN);
+            // Holes for the two bottom screws
+            zcyl(d=Screw_hole_diameter, h=Base_Wall_thickness, align=V_TOP, $fn=FN);
+        }
+
+        xmove(-Connector_x_offset) {
+            zmove(Connector_y_offset) {
+                // Space to rotate the gnomon
+                ycyl(r=gnomon_radius * 0.7, h=0.8 * gnomon_radius + 2 * EPSILON_THICKNESS, $fn=FN);
+                // Hole for the top screw
+                ycyl(d=Screw_hole_diameter, h=Base_diameter, $fn=FN);
+                // Flat surface for the top screw & washer/nut
+                yflip_copy(gnomon_radius * 0.73 - 2)
+                    ycyl(d=1.5 * Washer_Diameter, h=Base_radius - (gnomon_radius * 0.73 - 2), align=V_BACK, $fn=FN);
+            }
+
+            zmove(Base_Wall_thickness) {
+                zmove(0.315 * gnomon_radius) {
+                    cuboid([Base_radius - Connector_x_offset, 0.8 * gnomon_radius, gnomon_radius], align=V_TOP + V_LEFT);
+                    zscale(0.3) xcyl(r=0.4 * gnomon_radius, h=Base_radius - Connector_x_offset, align=V_LEFT, $fn=FN);
+                }
+
+                zmove(1.025 * gnomon_radius) {
+                    zscale(1.5) xcyl(r=0.4 * gnomon_radius, h=Base_radius + Connector_x_offset, align=V_RIGHT, $fn=FN);
+                }
+            }
+        }
+    }
 }
 
 
@@ -194,13 +192,13 @@ module Block_jar_lid_bottom() {
     Lid_diameter_inside = 82;
     Lid_thickness = 3.0;
     Lid_skirt_height_under_teeth = 0;
-    Lid_skirt_full_height = 15 +Lid_thickness +Lid_skirt_height_under_teeth;
+    Lid_skirt_full_height = 15 + Lid_thickness + Lid_skirt_height_under_teeth;
     Teeth_thickness = 2.0;
     Teeth_depth = 1.7;
     Teeth_length = 10.0;
     Connector_x_offset = 10;
     Base_diameter = 70;
-    gnomon_thickness = 2*gnomon_radius;
+    gnomon_thickness = 2 * gnomon_radius;
     Screw_hole_diameter = 6.5;
     Logo_font_size = 6;
     Logo_negative_depth = 2;
@@ -211,31 +209,37 @@ module Block_jar_lid_bottom() {
     Support_thickness = 1.2;
     Support_height_above = 5; // for an easier removal
 
-    translate([Connector_x_offset, 0,0]) {
+    //xmove(Connector_x_offset)
+    {
         //The skirt of the lid
-        difference(){
-            union(){
+        difference() {
+            union() {
                 //Outside shape for the skirt
-                hull(){
-                    translate([0,0,-Lid_skirt_full_height+1/2]) rotate([0,0,0]) cylinder(r=Lid_diameter_outside/2*1.035 ,h=1, center=true, $fn=12); // factor 1.035 because it has 12 faces: Lid_diameter_outside/2 is the minimum distance, instead of the maximum distance
-                    translate([0,0,-Lid_thickness-1/2]) rotate([0,0,0]) cylinder(r=Lid_diameter_outside/2 ,h=1, center=true, $fn=100);
+                hull() {
+                    // factor 1.035 because it has 12 faces: Lid_diameter_outside/2 is the minimum distance, instead of the maximum distance
+                    zmove(-Lid_skirt_full_height + 1 / 2) zcyl(r=Lid_diameter_outside / 2 * 1.035, h=1, $fn=12);
+                    zmove(-Lid_thickness - 1 / 2) zcyl(r=Lid_diameter_outside / 2, h=1, $fn=FN);
                 }
                 // Add the MOJOPTIX Logo (positive shape)
-                rotate([0,0,90]) translate([0,-Lid_diameter_outside/2+Logo_negative_depth+20,-Lid_skirt_full_height/2]) rotate([90,0,0]) linear_extrude(20) text("MOJOPTIX",size=Logo_font_size,halign="center", valign="center",font="Comic Sans MS:style=Bold");
-                rotate([0,0,-30]) translate([0,-Lid_diameter_outside/2+Logo_negative_depth+20,-Lid_skirt_full_height/2]) rotate([90,0,0]) linear_extrude(20) text("MOJOPTIX",size=Logo_font_size,halign="center", valign="center",font="Comic Sans MS:style=Bold");
-                rotate([0,0,210]) translate([0,-Lid_diameter_outside/2+Logo_negative_depth+20,-Lid_skirt_full_height/2]) rotate([90,0,0]) linear_extrude(20) text("MOJOPTIX",size=Logo_font_size,halign="center", valign="center",font="Comic Sans MS:style=Bold");
+                for (angle=[90, -30, 210]) zrot(angle)
+                    translate([0,-Lid_diameter_outside / 2 + Logo_negative_depth + 20, -Lid_skirt_full_height / 2])
+                        xrot(90)
+                            linear_extrude(20)
+                                text("MOJOPTIX", size=Logo_font_size, halign="center", valign="center", font="Comic Sans MS:style=Bold");
             }
             //Trim the Positive shape of the MOJOPTIX Logo with a tube
-            difference(){
-                cylinder(r=10*Lid_diameter_outside/2+Logo_positive_depth,h=1000,center=true, $fn=100);
-                cylinder(r=Lid_diameter_outside/2+Logo_positive_depth,h=1000,center=true, $fn=100);
+            difference() {
+                zcyl(r=10 * Lid_diameter_outside / 2 + Logo_positive_depth, h=1000, $fn=FN);
+                zcyl(r=Lid_diameter_outside / 2 + Logo_positive_depth, h=1000, $fn=FN);
             }
             // Add the MOJOPTIX Logo (negative shape)
             /*            difference(){
                           union(){*/
-            rotate([0,0,90]) translate([0,-Lid_diameter_outside/2+Logo_negative_depth,-Lid_skirt_full_height/2]) rotate([90,0,0]) linear_extrude(100) text("MOJOPTIX",size=Logo_font_size,halign="center", valign="center",font="Comic Sans MS:style=Bold");
-            rotate([0,0,-30]) translate([0,-Lid_diameter_outside/2+Logo_negative_depth,-Lid_skirt_full_height/2]) rotate([90,0,0]) linear_extrude(100) text("MOJOPTIX",size=Logo_font_size,halign="center", valign="center",font="Comic Sans MS:style=Bold");
-            rotate([0,0,210]) translate([0,-Lid_diameter_outside/2+Logo_negative_depth,-Lid_skirt_full_height/2]) rotate([90,0,0]) linear_extrude(100) text("MOJOPTIX",size=Logo_font_size,halign="center", valign="center",font="Comic Sans MS:style=Bold");
+            for (angle=[90, -30, 210]) zrot(angle)
+                translate([0,-Lid_diameter_outside/2+Logo_negative_depth,-Lid_skirt_full_height/2])
+                    rotate([90,0,0])
+                        linear_extrude(100)
+                            text("MOJOPTIX",size=Logo_font_size,halign="center", valign="center",font="Comic Sans MS:style=Bold");
             /*                }
             //Trim the Negative shape of the MOJOPTIX Logo with a cylinder
             cylinder(r=Lid_diameter_outside/2-Logo_inside_cylinder_depth,h=1000,center=true, $fn=100);
@@ -246,10 +250,10 @@ module Block_jar_lid_bottom() {
         //The Teeth
         translate([0,0,-Lid_skirt_full_height+Teeth_thickness/2+Lid_skirt_height_under_teeth]) intersection(){
             difference(){
-                rotate([0,0,0]) cylinder(r=(0.5*Lid_diameter_inside+0.5*Lid_diameter_outside)/2 ,h=Teeth_thickness, center=true, $fn=100);
-                rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2-Teeth_depth ,h=2*Teeth_thickness, center=true, $fn=100);
+                cylinder(r=(0.5*Lid_diameter_inside+0.5*Lid_diameter_outside)/2 ,h=Teeth_thickness, center=true, $fn=100);
+                cylinder(r=Lid_diameter_inside/2-Teeth_depth ,h=2*Teeth_thickness, center=true, $fn=100);
             }
-            union(){
+            union() {
                 cuboid([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness]);
                 zrot(60) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
                 zrot(120) cube([2*Lid_diameter_outside,Teeth_length,2*Teeth_thickness], center=true);
@@ -313,23 +317,24 @@ module Gnomon_Bottom_Connector(nn) {
 }
 /* ************************************************************************/
 module Central_Connector(nn) {
-    color("red") xmove(205 / nn) Block_rotating_base_mid();
+    color("red") xmove(205 / nn)
+        zmove(24 / nn)
+            Block_rotating_base_mid();
 }
 /* ************************************************************************/
 module Jar_Lid_Top(nn) {
-    translate([265/nn,0,0]) Block_jar_lid_top();
+            Block_jar_lid_top();
 }
 /* ************************************************************************/
 module Jar_Lid_Bottom(nn) {
-    //    color("blue"){
-    translate([265/nn,0,-24/nn]) Block_jar_lid_bottom();
-    //    }
+    Block_jar_lid_bottom();
 }
 
 
 /* ************************************************************************/
 module Gnomon(nn) {
     color("green"){
+        zmove(24 / nn)
         if (IS_NORTHERN_HEMISPHERE){
             translate([5,0,0])    Gnomon_Digits(nn);
             translate([11,0,0])   Gnomon_Rounded_Top(nn);
@@ -356,14 +361,25 @@ if (PRINT_SELECTION == 3)
     Block_jar_lid_top();
     //translate([-14,0,0]) Jar_Lid_Top(nn);
 // 4: the bottom part of the lid
-if (PRINT_SELECTION == 4) translate([-9,0,3.75]) rotate([180,0,0]) Jar_Lid_Bottom(nn);
+if (PRINT_SELECTION == 4)
+    //translate([-9,0, 3.75])
+        //rotate([180,0,0])
+            Jar_Lid_Bottom(nn);
 // 5: the hours tens block
 if (PRINT_SELECTION == 5) Block_hours_tens();
 // 10: everything
 if (PRINT_SELECTION == 10)
 {
-    Gnomon(nn);
-    translate([-8,0,0]) Central_Connector(nn);
-    translate([-14,0,0]) Jar_Lid_Top(nn);
-    translate([-9,0,3.75]) Jar_Lid_Bottom(nn);
+    xmove(-200)
+    xmove(209 - 10 - 265 / nn)
+        zmove(-3.75)
+            Gnomon(nn);
+    xmove(-200)
+    xmove(209 - 10 - 265 / nn)
+        translate([-8, 0, 0])
+            zmove(-3.75)
+                Central_Connector(nn);
+    Jar_Lid_Top(nn);
+    Jar_Lid_Bottom(nn);
 }
+
