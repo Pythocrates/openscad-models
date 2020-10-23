@@ -100,35 +100,28 @@ module Block_rotating_base_mid() {
     /* Build the mid part of the rotating base */
     gnomon_thickness = 1.3 * gnomon_radius;
     Screw_hole_diameter = 6.5;
-    Nut_width_blocking = 8.8;
-    Nut_width_non_blocking = 11.2;
     Washer_Diameter = 11.9;
-    Washer_thickness = 1.3;
 
     // The connection to the gnomon
     difference() {
         union() {
             // The gnomon shape
-            intersection() {
-                zmove(gnomon_radius / 2) cuboid([gnomon_thickness, 2 * gnomon_radius, gnomon_radius]);
-                xcyl(r=gnomon_radius, h=gnomon_thickness, $fn=FN);
-            }
+            half_of() xcyl(r=gnomon_radius, h=gnomon_thickness, align=V_LEFT, $fn=FN);
             // The connection to the base
             intersection(){
-                translate([gnomon_thickness * (1 - (1 - 0.7) / 2.0), 0, gnomon_radius / 2])
-                    cuboid([gnomon_thickness * 0.7, 0.8 * gnomon_radius, gnomon_radius]);
-                xmove(gnomon_thickness / 2.0 + gnomon_radius) xcyl(r=gnomon_radius, h=2*gnomon_thickness, $fn=FN);
+                cuboid([gnomon_thickness * 0.7, 0.8 * gnomon_radius, gnomon_radius], align=V_RIGHT + V_UP);
+                xcyl(r=gnomon_radius, h=gnomon_thickness * 0.7, align=V_RIGHT, $fn=FN);
             }
         }
         // The negative space for the screw and washer
         zmove(Washer_Diameter / 2 + 3)
-            xcyl(d=Screw_hole_diameter, h=2.5 * gnomon_thickness, $fn=FN);
-        translate([gnomon_thickness * (0.5 - 4 / 8), 0, Washer_Diameter / 2 + 2.5])
-            cuboid([gnomon_thickness * 6 / 8, 2 * (Washer_Diameter / 2 + 2), 2 * (Washer_Diameter / 2 + 3)]);
-        translate([gnomon_thickness * (0.5 - 4 / 8), 0, Washer_Diameter + 4])
-            scale([0.37, 1, 0.2]) ycyl(r=gnomon_thickness, h=2 * (Washer_Diameter / 2 + 2), $fn=FN);
-        translate([gnomon_thickness, 0, gnomon_radius / 2.0])
-            ycyl(d=Screw_hole_diameter, h=2 * gnomon_thickness, $fn=FN);
+            xcyl(d=Screw_hole_diameter, h=2 * gnomon_thickness, $fn=FN);
+        xmove(-gnomon_thickness / 2)
+            cuboid([gnomon_thickness * 3 / 4, Washer_Diameter + 4, 2 * (Washer_Diameter / 2 + 3)], align=V_TOP);
+        translate([-gnomon_thickness / 2, 0, Washer_Diameter + 4])
+            scale([0.37, 1, 0.2]) ycyl(r=gnomon_thickness, h=Washer_Diameter + 4, $fn=FN);
+        translate([gnomon_thickness / 2, 0, gnomon_radius / 2.0])
+            #ycyl(d=Screw_hole_diameter, h=0.8 * gnomon_radius, $fn=FN);
     }
 }
 
@@ -317,8 +310,7 @@ module Gnomon_Bottom_Connector(nn) {
 }
 /* ************************************************************************/
 module Central_Connector(nn) {
-    color("red") xmove(205 / nn)
-        zmove(24 / nn)
+    color("red")
             Block_rotating_base_mid();
 }
 /* ************************************************************************/
@@ -355,7 +347,7 @@ module Gnomon(nn) {
 // 1: the gnomon
 if (PRINT_SELECTION == 1) Gnomon(nn);
 // 2: the central connector piece
-if (PRINT_SELECTION == 2) translate([-8,0,0]) Central_Connector(nn);
+if (PRINT_SELECTION == 2) Central_Connector(nn);
 // 3: the top part of the lid
 if (PRINT_SELECTION == 3)
     Block_jar_lid_top();
@@ -374,6 +366,9 @@ if (PRINT_SELECTION == 10)
     xmove(209 - 10 - 265 / nn)
         zmove(-3.75)
             Gnomon(nn);
+    xmove(205 / nn)
+        zmove(24 / nn)
+        xmove(gnomon_radius / 2 * 1.3)
     xmove(-200)
     xmove(209 - 10 - 265 / nn)
         translate([-8, 0, 0])
