@@ -33,7 +33,9 @@ include <gnomon.scad>
 // 4: the bottom part of the lid
 // 10: display everything
 PRINT_SELECTION =
-3;
+//1.28;
+//1;
+10;
 
 FN = 120;
 
@@ -71,27 +73,23 @@ module Block_rotating_base_upper() {
 
     difference() {
         // Build The gnomon shape
-        union() {
-            intersection(){
-                zmove(gnomon_radius / 2) cuboid([2 / 3 * gnomon_thickness, 2 * gnomon_radius, gnomon_radius]);
-                xcyl(r=gnomon_radius, h=gnomon_thickness, $fn=FN);
-            }
-        }
+        half_of() xcyl(r=gnomon_radius, h=2 / 3 * gnomon_thickness, align=V_LEFT, $fn=FN);
+
         // The negative space for the screw, nut and washer
-        zmove(Washer_Diameter / 2 + 3) ycyl(r=Screw_hole_diameter / 2, h=2 * gnomon_thickness, $fn=FN);
-        translate([gnomon_thickness * (0.45 - 1 / 3), 0, Washer_Diameter / 2 + 3])
+        zmove(Washer_Diameter / 2 + 3) xmove(-gnomon_thickness / 3) ycyl(r=Screw_hole_diameter / 2, h=2 * gnomon_thickness, $fn=FN);
+        translate([gnomon_thickness * (0.45 - 2 / 3), 0, Washer_Diameter / 2 + 3])
             ycyl(r=Washer_Diameter / 2 + 4, h=Washer_thickness + 2, $fn=FN);
-        xmove(gnomon_thickness * (0.45 - 1 / 3))
-            cuboid([Washer_thickness + 2, Washer_Diameter + 8, 2 * (Washer_Diameter / 2 + 3)]);
-        xmove(gnomon_thickness * (0.4 - 2 / 3))
-            cuboid([gnomon_thickness * 0.8 + 1, Nut_width_blocking, 2 * (Washer_Diameter / 2 + 3)]);
+        xmove(gnomon_thickness * (0.45 - 2 / 3))
+            cuboid([Washer_thickness + 2, Washer_Diameter + 8, Washer_Diameter / 2 + 3], align=V_TOP);
+        xmove(gnomon_thickness * (0.4 - 1))
+            cuboid([gnomon_thickness * 0.8 + 1, Nut_width_blocking, Washer_Diameter / 2 + 3], align=V_TOP);
         intersection() {
-            translate([gnomon_thickness * (0.45 - 2 / 3),0,Washer_Diameter/2+3])
-                cuboid([gnomon_thickness, 2*(Nut_width_non_blocking/2+1), 2*(Nut_width_non_blocking/2+1)]);
-            translate([gnomon_thickness * (0.45 - 2 / 3), 0, Washer_Diameter / 2 + 3 - EPSILON_THICKNESS])
+            translate([gnomon_thickness * (0.45 - 1), 0, Washer_Diameter / 2 + 3])
+                cuboid([gnomon_thickness, 2 * (Nut_width_non_blocking / 2 + 1), 2 * (Nut_width_non_blocking / 2 + 1)]);
+            translate([gnomon_thickness * (0.45 - 1), 0, Washer_Diameter / 2 + 3 - EPSILON_THICKNESS])
                 cuboid([gnomon_thickness * 2 / 3 + 1, Nut_width_blocking, gnomon_radius]);
         }
-        xmove(gnomon_thickness * (0.45 - 2 / 3)) cuboid([gnomon_thickness*2/3+1,Nut_width_blocking+1, 1]);
+        xmove(gnomon_thickness * (0.45 - 1)) cuboid([gnomon_thickness * 2 / 3 + 1, Nut_width_blocking + 1, 1]);
     }
 }
 
@@ -288,34 +286,36 @@ module Block_jar_lid_bottom() {
 /* ************************************************************************/
 /* ************************************************************************/
 module Gnomon_Digits(nn) {
-    translate([112.5/nn,0,0]) Block_hours_tens();
-    translate([89/nn,0,0]) build_spacer_block(2/nn);
-    translate([65.5/nn,0,0])  Block_hours_units();
-    translate([38/nn,0,0]) build_spacer_block(10/nn);
+    xmove(-112.5 / nn - gnomon_radius / 2 * 45 / 40) {
+        xmove(112.5 / nn) Block_hours_tens();
+        xmove(89 / nn) build_spacer_block(2 / nn);
+        xmove(65.5 / nn) Block_hours_units();
+        xmove(38 / nn) build_spacer_block(10 / nn);
 
-    translate([20.5/nn,0,0]) Block_semicolon();
+        xmove(20.5 / nn) Block_semicolon();
 
-    translate([-14.5/nn,0,0])    Block_minutes_tens();
-    translate([-42/nn,0,0]) build_spacer_block(10/nn);
-    translate([-69.5/nn,0,0])   Block_minutes_units();
+        xmove(-14.5 / nn) Block_minutes_tens();
+        xmove(-42 / nn) build_spacer_block(10 / nn);
+        xmove(-69.5 / nn) Block_minutes_units();
+    }
 }
 
 /* ************************************************************************/
 module Gnomon_Rounded_Top(nn) {
-    translate([-120/nn,0,0]) build_round_top_block();
+    build_round_top_block();
 }
 /* ************************************************************************/
 module Gnomon_Bottom_Connector(nn) {
-    translate([155/nn,0,0]) Block_rotating_base_upper();
+    Block_rotating_base_upper();
 }
 /* ************************************************************************/
 module Central_Connector(nn) {
     color("red")
-            Block_rotating_base_mid();
+        #Block_rotating_base_mid();
 }
 /* ************************************************************************/
 module Jar_Lid_Top(nn) {
-            Block_jar_lid_top();
+    Block_jar_lid_top();
 }
 /* ************************************************************************/
 module Jar_Lid_Bottom(nn) {
@@ -325,19 +325,19 @@ module Jar_Lid_Bottom(nn) {
 
 /* ************************************************************************/
 module Gnomon(nn) {
-    color("green"){
-        zmove(24 / nn)
-        if (IS_NORTHERN_HEMISPHERE){
-            translate([5,0,0])    Gnomon_Digits(nn);
-            translate([11,0,0])   Gnomon_Rounded_Top(nn);
-            translate([0,0,0])    Gnomon_Bottom_Connector(nn);
+    color("green") {
+        xmove(-155/nn - 10)
+        if (IS_NORTHERN_HEMISPHERE) {
+            xmove(5 + 112.5 / nn + gnomon_radius / 2 * 45 / 40) Gnomon_Digits(nn);
+            xmove(11 + gnomon_radius / 2 - 120 / nn) Gnomon_Rounded_Top(nn);
+            xmove(155 / nn + gnomon_radius / 3) Gnomon_Bottom_Connector(nn);
+        } else {
+            xmove(112.5 / nn + 37.25 + gnomon_radius / 2 * 45 / 40) zrot(180) Gnomon_Digits(nn);
+            xmove(11 + gnomon_radius / 2 - 120 / nn) Gnomon_Rounded_Top(nn);
+            xmove(155 / nn + gnomon_radius) Gnomon_Bottom_Connector(nn);
         }
-        else {
-            translate([37.25,0,0]) rotate([0,0,180]) Gnomon_Digits(nn);
-            translate([11,0,0])   Gnomon_Rounded_Top(nn);
-            translate([0,0,0])    Gnomon_Bottom_Connector(nn);
-        }
-    }}
+    }
+}
 
 /* ************************************************************************/
 /* MAIN *******************************************************************/
@@ -346,6 +346,17 @@ module Gnomon(nn) {
 // Choose what you want to print/display:
 // 1: the gnomon
 if (PRINT_SELECTION == 1) Gnomon(nn);
+if (PRINT_SELECTION == 1.1) Gnomon_Bottom_Connector(nn);
+if (PRINT_SELECTION == 1.2) Gnomon_Digits(nn);
+if (PRINT_SELECTION == 1.21) Block_hours_tens();
+if (PRINT_SELECTION == 1.22) build_spacer_block(2/nn);
+if (PRINT_SELECTION == 1.23) Block_hours_units();
+if (PRINT_SELECTION == 1.24) build_spacer_block(10/nn);
+if (PRINT_SELECTION == 1.25) Block_semicolon();
+if (PRINT_SELECTION == 1.26) Block_minutes_tens();
+if (PRINT_SELECTION == 1.27) build_spacer_block(10/nn);
+if (PRINT_SELECTION == 1.28) Block_minutes_units();
+if (PRINT_SELECTION == 1.3) Gnomon_Rounded_Top(nn);
 // 2: the central connector piece
 if (PRINT_SELECTION == 2) Central_Connector(nn);
 // 3: the top part of the lid
@@ -353,28 +364,17 @@ if (PRINT_SELECTION == 3)
     Block_jar_lid_top();
     //translate([-14,0,0]) Jar_Lid_Top(nn);
 // 4: the bottom part of the lid
-if (PRINT_SELECTION == 4)
-    //translate([-9,0, 3.75])
-        //rotate([180,0,0])
-            Jar_Lid_Bottom(nn);
+if (PRINT_SELECTION == 4) Jar_Lid_Bottom(nn);
 // 5: the hours tens block
 if (PRINT_SELECTION == 5) Block_hours_tens();
 // 10: everything
 if (PRINT_SELECTION == 10)
 {
-    xmove(-200)
-    xmove(209 - 10 - 265 / nn)
-        zmove(-3.75)
+    xmove(9 - 110 / nn)
+        zmove(-3.75 + 24 / nn)
             Gnomon(nn);
-    xmove(205 / nn)
-        zmove(24 / nn)
-        xmove(gnomon_radius / 2 * 1.3)
-    xmove(-200)
-    xmove(209 - 10 - 265 / nn)
-        translate([-8, 0, 0])
-            zmove(-3.75)
-                Central_Connector(nn);
+
+    xmove(-34.5) zmove(14.25) Central_Connector(nn);
     Jar_Lid_Top(nn);
     Jar_Lid_Bottom(nn);
 }
-
