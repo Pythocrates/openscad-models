@@ -11,6 +11,7 @@ FN = 120;
 HOOK_DISTANCE = 145;
 HOOK_DIAMETER = 35;
 HOOK_LENGTH = 25;
+STRAP_WIDTH = 30;
 
 
 module single_hook(diameter, length) {
@@ -24,6 +25,13 @@ module single_hook(diameter, length) {
         }
     }
     cyl(l=straight_depth, d=diameter, align=V_FRONT, orient=ORIENT_Y, $fn=FN);
+
+    // wide sub-hook for straps and other...
+    cyl(l=straight_depth, d=diameter, align=V_FRONT, orient=ORIENT_Y, $fn=FN);
+    zmove(-25) {
+        cuboid([HOOK_DIAMETER, STRAP_WIDTH + 3, 3], align=V_FRONT + V_DOWN, fillet=3 / 2, edges=EDGES_Y_ALL/* + EDGES_FRONT*/, $fn=FN);
+        ymove(-STRAP_WIDTH - 3) yrot(90) cyl(l=HOOK_DIAMETER, r=3, fillet=3, $fn=FN);
+    }
 }
 
 
@@ -31,7 +39,7 @@ module twin_hook_plate(diameter, length, distance) {
     xspread(spacing=distance) single_hook(diameter=diameter, length=length);
 
     difference() {
-        cuboid([distance + diameter * 2, 10, diameter * 2], align=V_BACK, fillet=5, edges=EDGES_FRONT, $fn=FN);
+        cuboid([distance + diameter * 2, 5, diameter * 2], align=V_BACK, fillet=2.5, edges=EDGES_FRONT + EDGES_Y_ALL, $fn=FN);
         grid2d(spacing=[distance + diameter + 10, diameter + 10], rows=2, cols=2, orient=ORIENT_Y) {
             //xrot(-90) screw_hole(DIN965, M4, 20, 10);
             #ycyl(l=10, d=3.5, align=V_BACK, $fn=FN);
