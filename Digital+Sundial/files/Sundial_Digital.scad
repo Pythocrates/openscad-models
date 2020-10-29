@@ -95,13 +95,14 @@ module Block_rotating_base_upper(align=V_CENTER) {
 }
 
 
-module Block_rotating_base_mid() {
+module Block_rotating_base_mid(align=V_CENTER) {
     /* Build the mid part of the rotating base */
     gnomon_thickness = 1.3 * gnomon_radius;
     Screw_hole_diameter = 6.5;
     Washer_Diameter = 11.9;
 
     // The connection to the gnomon
+    if (align == "hole") translate([-gnomon_thickness / 2, 0, -gnomon_radius / 2])
     difference() {
         union() {
             // The gnomon shape
@@ -125,7 +126,7 @@ module Block_rotating_base_mid() {
 }
 
 
-module Block_jar_lid_top() {
+module Block_jar_lid_top(align=V_CENTER) {
     gnomon_thickness = 2 * gnomon_radius;
     Screw_hole_diameter = 6.5;
     Washer_Diameter = 11.9;
@@ -136,6 +137,8 @@ module Block_jar_lid_top() {
     Connector_y_offset = 0.875 * gnomon_radius + Base_Wall_thickness;
 
     // The Connector
+    translate([align.x * Base_diameter / 2, align.y * Base_diameter / 2, align.z * (Connector_y_offset + gnomon_radius * 0.6) / 2])
+    zmove(-(Connector_y_offset + gnomon_radius * 0.6) / 2)
     difference() {
         //General shape
         hull() {
@@ -327,19 +330,35 @@ module root_node() {
 }
 
 module jar_lid_bottom_node(align=V_CENTER) {
+    size = [88, 88, 20];
     Block_jar_lid_bottom(align=align);
 
-    jar_lid_top_node();
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        jar_lid_top_node(align=V_TOP);
 }
 
-module jar_lid_top_node() {
-    Block_jar_lid_top();
-    xmove(-34.5) zmove(14.25) rotating_base_mid_node();
+module jar_lid_top_node(align=V_CENTER) {
+    Base_diameter = 70;
+    Base_Wall_thickness = 3;
+    Connector_x_offset = 15;
+    Connector_y_offset = 0.875 * gnomon_radius + Base_Wall_thickness;
+    size = [Base_diameter, Base_diameter, Connector_y_offset + gnomon_radius * 0.6];
+    Block_jar_lid_top(align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-Connector_x_offset) zmove(Connector_y_offset / 2 - gnomon_radius * 0.3)
+            rotating_base_mid_node(align="hole");
 }
 
-module rotating_base_mid_node() {
-    Block_rotating_base_mid();
-    xmove(43.5 - 110 / nn) zmove(-18 + 24 / nn) rotating_base_upper_node(align=V_LEFT);
+module rotating_base_mid_node(align=V_CENTER) {
+    gnomon_thickness = 1.3 * gnomon_radius;
+    Block_rotating_base_mid(align=align);
+
+    if (align == "hole") translate([-gnomon_thickness / 2, 0, -gnomon_radius / 2])
+        xmove(-gnomon_thickness)
+            rotating_base_upper_node(align=V_LEFT);
 }
 
 module rotating_base_upper_node(align=V_CENTER) {
