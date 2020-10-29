@@ -35,7 +35,7 @@ include <gnomon.scad>
 PRINT_SELECTION =
 //1.28;
 //1;
-10;
+20;
 
 FN = 120;
 
@@ -62,34 +62,35 @@ GRID_PIXEL_DEPTH = 0.1;
 nn = 40.0 / gnomon_radius;
 
 
-module Block_rotating_base_upper() {
+module Block_rotating_base_upper(align=V_CENTER) {
     /* Build the upper part of the rotating base */
-    gnomon_thickness = gnomon_radius;
+    gnomon_thickness = 2 / 3 * gnomon_radius;
     Screw_hole_diameter = 6.5;
     Nut_width_blocking = 8.8 + 1.3;
     Nut_width_non_blocking = 11.2;
     Washer_Diameter = 11.9;
     Washer_thickness = 1.3;
 
+    translate([align.x * gnomon_thickness / 2, align.y * gnomon_radius, align.z * gnomon_radius])
     difference() {
         // Build The gnomon shape
-        half_of() xcyl(r=gnomon_radius, h=2 / 3 * gnomon_thickness, align=V_LEFT, $fn=FN);
+        half_of() xcyl(r=gnomon_radius, h=gnomon_thickness, $fn=FN);
 
         // The negative space for the screw, nut and washer
-        zmove(Washer_Diameter / 2 + 3) xmove(-gnomon_thickness / 3) ycyl(r=Screw_hole_diameter / 2, h=2 * gnomon_thickness, $fn=FN);
-        translate([gnomon_thickness * (0.45 - 2 / 3), 0, Washer_Diameter / 2 + 3])
+        zmove(Washer_Diameter / 2 + 3) ycyl(r=Screw_hole_diameter / 2, h=2 * gnomon_radius, $fn=FN);
+        translate([gnomon_thickness * (0.45 - 1 / 3), 0, Washer_Diameter / 2 + 3])
             ycyl(r=Washer_Diameter / 2 + 4, h=Washer_thickness + 2, $fn=FN);
-        xmove(gnomon_thickness * (0.45 - 2 / 3))
+        xmove(gnomon_thickness * 7 / 40)
             cuboid([Washer_thickness + 2, Washer_Diameter + 8, Washer_Diameter / 2 + 3], align=V_TOP);
-        xmove(gnomon_thickness * (0.4 - 1))
-            cuboid([gnomon_thickness * 0.8 + 1, Nut_width_blocking, Washer_Diameter / 2 + 3], align=V_TOP);
+        xmove(-gnomon_thickness * 0.4)
+            cuboid([gnomon_thickness * 1.2 + 1, Nut_width_blocking, Washer_Diameter / 2 + 3], align=V_TOP);
         intersection() {
-            translate([gnomon_thickness * (0.45 - 1), 0, Washer_Diameter / 2 + 3])
-                cuboid([gnomon_thickness, 2 * (Nut_width_non_blocking / 2 + 1), 2 * (Nut_width_non_blocking / 2 + 1)]);
-            translate([gnomon_thickness * (0.45 - 1), 0, Washer_Diameter / 2 + 3 - EPSILON_THICKNESS])
-                cuboid([gnomon_thickness * 2 / 3 + 1, Nut_width_blocking, gnomon_radius]);
+            translate([gnomon_thickness * (-13/40), 0, Washer_Diameter / 2 + 3])
+                cuboid([gnomon_thickness * 3 / 2, 2 * (Nut_width_non_blocking / 2 + 1), 2 * (Nut_width_non_blocking / 2 + 1)]);
+            translate([gnomon_thickness * 1.2, 0, Washer_Diameter / 2 + 3 - EPSILON_THICKNESS])
+                cuboid([gnomon_thickness + 1, Nut_width_blocking, gnomon_radius]);
         }
-        xmove(gnomon_thickness * (0.45 - 1)) cuboid([gnomon_thickness * 2 / 3 + 1, Nut_width_blocking + 1, 1]);
+        xmove(-13 / 40 * gnomon_thickness) cuboid([gnomon_thickness + 1, Nut_width_blocking + 1, 1]);
     }
 }
 
@@ -119,7 +120,7 @@ module Block_rotating_base_mid() {
         translate([-gnomon_thickness / 2, 0, Washer_Diameter + 4])
             scale([0.37, 1, 0.2]) ycyl(r=gnomon_thickness, h=Washer_Diameter + 4, $fn=FN);
         translate([gnomon_thickness / 2, 0, gnomon_radius / 2.0])
-            #ycyl(d=Screw_hole_diameter, h=0.8 * gnomon_radius, $fn=FN);
+            ycyl(d=Screw_hole_diameter, h=0.8 * gnomon_radius, $fn=FN);
     }
 }
 
@@ -177,7 +178,7 @@ module Block_jar_lid_top() {
 }
 
 
-module Block_jar_lid_bottom() {
+module Block_jar_lid_bottom(align=V_CENTER) {
     //Dimensions for a Bonne Maman jam jar
     Lid_diameter_outside = 88;
     Lid_diameter_inside = 82;
@@ -200,7 +201,8 @@ module Block_jar_lid_bottom() {
     Support_thickness = 1.2;
     Support_height_above = 5; // for an easier removal
 
-    //xmove(Connector_x_offset)
+    translate([align.x * Lid_diameter_outside / 2, align.y * Lid_diameter_outside / 2, align.z * 20])
+    zmove(20)
     {
         //The skirt of the lid
         difference() {
@@ -224,17 +226,13 @@ module Block_jar_lid_bottom() {
                 zcyl(r=Lid_diameter_outside / 2 + Logo_positive_depth, h=1000, $fn=FN);
             }
             // Add the MOJOPTIX Logo (negative shape)
-            /*            difference(){
-                          union(){*/
             for (angle=[90, -30, 210]) zrot(angle)
                 translate([0,-Lid_diameter_outside/2+Logo_negative_depth,-Lid_skirt_full_height/2])
                     rotate([90,0,0])
                         linear_extrude(100)
                             text("MOJOPTIX",size=Logo_font_size,halign="center", valign="center",font="Comic Sans MS:style=Bold");
-            /*                }
             //Trim the Negative shape of the MOJOPTIX Logo with a cylinder
             cylinder(r=Lid_diameter_outside/2-Logo_inside_cylinder_depth,h=1000,center=true, $fn=100);
-            }*/
             //Inside shape for the skirt
             translate([0,0,-Lid_skirt_full_height/2]) rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2 ,h=2*Lid_skirt_full_height, center=true, $fn=100);
         }
@@ -261,19 +259,20 @@ module Block_jar_lid_bottom() {
                 }
             }
             // Holes for the two screws
-            translate([1.1*Base_diameter/6,0,gnomon_radius/2.0])
-                rotate([0,0,0]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
-            translate([-1.1*Base_diameter/6,0,gnomon_radius/2.0])
-                rotate([0,0,0]) cylinder(r=Screw_hole_diameter/2, h=2*gnomon_thickness, center=true, $fn=100);
+            translate([1.1 * Base_diameter / 6, 0, gnomon_radius / 2.0])
+                rotate([0, 0, 0]) cylinder(r=Screw_hole_diameter / 2, h=2 * gnomon_thickness, center=true, $fn=FN);
+            translate([-1.1 * Base_diameter / 6,0, gnomon_radius / 2.0])
+                rotate([0, 0, 0]) cylinder(r=Screw_hole_diameter / 2, h=2 * gnomon_thickness, center=true, $fn=FN);
             // A single line on the 1st layer to have a custom scarring (instead of some scarring at a random place)
-            translate([0,0,0]) cube([100,0.1,0.5], center=true);
+            translate([0, 0, 0]) cube([100, 0.1, 0.5], center=true);
         }
-
 
         // Support structure for the teeth
         if (ADD_BOTTOM_LID_SUPPORT) {
             color("red") difference(){
-                translate([0,0,-Lid_skirt_full_height/2-Lid_thickness/2-Support_vertical_gap-Support_height_above/2]) rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2-Teeth_depth-Support_horizontal_gap,h=Lid_skirt_full_height-Lid_thickness+Support_height_above, center=true, $fn=100);
+                translate([0, 0, -Lid_skirt_full_height / 2 - Lid_thickness / 2 - Support_vertical_gap - Support_height_above / 2])
+                    rotate([0, 0, 0])
+                        cylinder(r=Lid_diameter_inside/2-Teeth_depth-Support_horizontal_gap,h=Lid_skirt_full_height-Lid_thickness+Support_height_above, center=true, $fn=100);
                 translate([0,0,-Lid_skirt_full_height/2-Lid_thickness]) rotate([0,0,0]) cylinder(r=Lid_diameter_inside/2-Teeth_depth-Support_horizontal_gap-Support_thickness ,h=2*Lid_skirt_full_height+2*Support_height_above, center=true, $fn=100);
                 cube([2,1000,1000],center=true);
             }
@@ -282,62 +281,6 @@ module Block_jar_lid_bottom() {
     }
 }
 
-
-/* ************************************************************************/
-/* ************************************************************************/
-module Gnomon_Digits(nn) {
-    xmove(-112.5 / nn - gnomon_radius / 2 * 45 / 40) {
-        xmove(112.5 / nn) Block_hours_tens();
-        xmove(89 / nn) build_spacer_block(2 / nn);
-        xmove(65.5 / nn) Block_hours_units();
-        xmove(38 / nn) build_spacer_block(10 / nn);
-
-        xmove(20.5 / nn) Block_semicolon();
-
-        xmove(-14.5 / nn) Block_minutes_tens();
-        xmove(-42 / nn) build_spacer_block(10 / nn);
-        xmove(-69.5 / nn) Block_minutes_units();
-    }
-}
-
-/* ************************************************************************/
-module Gnomon_Rounded_Top(nn) {
-    build_round_top_block();
-}
-/* ************************************************************************/
-module Gnomon_Bottom_Connector(nn) {
-    Block_rotating_base_upper();
-}
-/* ************************************************************************/
-module Central_Connector(nn) {
-    color("red")
-        #Block_rotating_base_mid();
-}
-/* ************************************************************************/
-module Jar_Lid_Top(nn) {
-    Block_jar_lid_top();
-}
-/* ************************************************************************/
-module Jar_Lid_Bottom(nn) {
-    Block_jar_lid_bottom();
-}
-
-
-/* ************************************************************************/
-module Gnomon(nn) {
-    color("green") {
-        xmove(-155/nn - 10)
-        if (IS_NORTHERN_HEMISPHERE) {
-            xmove(5 + 112.5 / nn + gnomon_radius / 2 * 45 / 40) Gnomon_Digits(nn);
-            xmove(11 + gnomon_radius / 2 - 120 / nn) Gnomon_Rounded_Top(nn);
-            xmove(155 / nn + gnomon_radius / 3) Gnomon_Bottom_Connector(nn);
-        } else {
-            xmove(112.5 / nn + 37.25 + gnomon_radius / 2 * 45 / 40) zrot(180) Gnomon_Digits(nn);
-            xmove(11 + gnomon_radius / 2 - 120 / nn) Gnomon_Rounded_Top(nn);
-            xmove(155 / nn + gnomon_radius) Gnomon_Bottom_Connector(nn);
-        }
-    }
-}
 
 /* ************************************************************************/
 /* MAIN *******************************************************************/
@@ -365,8 +308,6 @@ if (PRINT_SELECTION == 3)
     //translate([-14,0,0]) Jar_Lid_Top(nn);
 // 4: the bottom part of the lid
 if (PRINT_SELECTION == 4) Jar_Lid_Bottom(nn);
-// 5: the hours tens block
-if (PRINT_SELECTION == 5) Block_hours_tens();
 // 10: everything
 if (PRINT_SELECTION == 10)
 {
@@ -377,4 +318,38 @@ if (PRINT_SELECTION == 10)
     xmove(-34.5) zmove(14.25) Central_Connector(nn);
     Jar_Lid_Top(nn);
     Jar_Lid_Bottom(nn);
+}
+// 20: graph-based
+if (PRINT_SELECTION == 20) root_node();
+
+module root_node() {
+    jar_lid_bottom_node(align=V_DOWN);
+}
+
+module jar_lid_bottom_node(align=V_CENTER) {
+    Block_jar_lid_bottom(align=align);
+
+    jar_lid_top_node();
+}
+
+module jar_lid_top_node() {
+    Block_jar_lid_top();
+    xmove(-34.5) zmove(14.25) rotating_base_mid_node();
+}
+
+module rotating_base_mid_node() {
+    Block_rotating_base_mid();
+    xmove(43.5 - 110 / nn) zmove(-18 + 24 / nn) rotating_base_upper_node(align=V_LEFT);
+}
+
+module rotating_base_upper_node(align=V_CENTER) {
+    gnomon_thickness = 2 / 3 * gnomon_radius;
+    size = [gnomon_thickness, gnomon_radius, gnomon_radius];
+    Block_rotating_base_upper(align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+    //if (IS_NORTHERN_HEMISPHERE) {
+            hours_tens_node(align=V_LEFT);
 }

@@ -1,9 +1,12 @@
 include <BOSL/constants.scad>
 use <BOSL/shapes.scad>
 use <BOSL/transforms.scad>
+//use <scad-utils/linalg.scad>
 
 include <font.scad>
 
+
+function hadamard(a, b) = [a.x * b.x, a.y * b.y, a.z * b.z];
 
 module extrude_pixel(direction_angles, pixel_wall_angles) {
     /* Extrude a pixel in a given direction.
@@ -134,32 +137,6 @@ module build_round_top_block() {
 }
 
 
-module Block_hours_tens(align=V_CENTER) {
-    color("yellow") single_character_block(characters="1111111", pixel_wall_angle_y=6.0, align=align);
-}
-
-
-module Block_hours_units(align=V_CENTER) {
-    single_character_block(characters="0123456", pixel_wall_angle_y=6.0, align=align);
-}
-
-
-module Block_minutes_tens(align=V_CENTER) {
-    color("blue") single_character_block(characters="0240240240240240240", pixel_wall_angle_y=1.0, align=align);
-    //char_angle_y = [-50,-45,-40, -35,-30,-25, -20,-15,-10, -5,0,5, 10,15,20, 25,30,35, 40];
-}
-
-
-module Block_minutes_units(align=V_CENTER) {
-    color("red") single_character_block(characters="0000000", pixel_wall_angle_y=8.0, align=align);
-}
-
-
-module Block_semicolon(align=V_CENTER) {
-    color("blue") single_character_block(characters=":::::::", pixel_wall_angle_y=8.0, align=align);
-}
-
-
 module single_character_block(characters, pixel_wall_angle_y, align=V_CENTER) {
     i_last_character = len(characters) - 1;
     gnomon_thickness = gnomon_radius * 45.0 / 40.0; //45;
@@ -168,7 +145,102 @@ module single_character_block(characters, pixel_wall_angle_y, align=V_CENTER) {
     char_angle_y = [for (i = [0:i_last_character]) (90 / i_last_character) * i - 45];
     char_angles = [for (i = [0:i_last_character]) [char_angle_x[i], char_angle_y[i]]];
     difference() {
-        build_block(gnomon_thickness, characters, char_angles, [pixel_wall_angle_x, pixel_wall_angle_y]);
+        build_block(gnomon_thickness, characters, char_angles, [pixel_wall_angle_x, pixel_wall_angle_y], align=align);
         // build_create_pixel_grid(GRID_PIXEL_DEPTH, ID_column_OFF=[]);
     }
+}
+
+
+
+module hours_tens_node(align=V_CENTER) {
+    gnomon_thickness = gnomon_radius * 45.0 / 40.0; //45;
+    size = [gnomon_thickness, gnomon_radius, gnomon_radius];
+    color("yellow") single_character_block(characters="1111111", pixel_wall_angle_y=6.0, align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+            spacer_node_1(align=V_LEFT);
+}
+
+module spacer_node_1(align=V_CENTER) {
+    size = [10 / nn, gnomon_radius, gnomon_radius];
+    build_spacer_block(10 / nn, align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+            hours_units_node(align=V_LEFT);
+}
+
+module hours_units_node(align=V_CENTER) {
+    gnomon_thickness = gnomon_radius * 45.0 / 40.0; //45;
+    size = [gnomon_thickness, gnomon_radius, gnomon_radius];
+    single_character_block(characters="0123456", pixel_wall_angle_y=6.0, align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+            spacer_node_2(align=V_LEFT);
+}
+
+module spacer_node_2(align=V_CENTER) {
+    size = [10 / nn, gnomon_radius, gnomon_radius];
+    build_spacer_block(10 / nn, align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+            colon_node(align=V_LEFT);
+}
+
+module colon_node(align=V_CENTER) {
+    gnomon_thickness = gnomon_radius * 45.0 / 40.0; //45;
+    size = [gnomon_thickness, gnomon_radius, gnomon_radius];
+    color("blue") single_character_block(characters=":::::::", pixel_wall_angle_y=8.0, align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+            minutes_tens_node(align=V_LEFT);
+}
+
+module minutes_tens_node(align=V_CENTER) {
+    gnomon_thickness = gnomon_radius * 45.0 / 40.0; //45;
+    size = [gnomon_thickness, gnomon_radius, gnomon_radius];
+    color("blue") single_character_block(characters="0240240240240240240", pixel_wall_angle_y=1.0, align=align);
+    //char_angle_y = [-50,-45,-40, -35,-30,-25, -20,-15,-10, -5,0,5, 10,15,20, 25,30,35, 40];
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+            spacer_node_3(align=V_LEFT);
+}
+
+module spacer_node_3(align=V_CENTER) {
+    size = [10 / nn, gnomon_radius, gnomon_radius];
+    #build_spacer_block(10 / nn, align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+            minutes_units_node(align=V_LEFT);
+}
+
+module minutes_units_node(align=V_CENTER) {
+    gnomon_thickness = gnomon_radius * 45.0 / 40.0; //45;
+    size = [gnomon_thickness, gnomon_radius, gnomon_radius];
+    color("red") single_character_block(characters="0000000", pixel_wall_angle_y=8.0, align=align);
+
+    // Child nodes
+    translate(0.5 * hadamard(align, size))  // account for alignments
+        xmove(-size.x / 2)  // desired offset from own origin
+            round_top_node(align=V_CENTER);
+}
+
+module round_top_node(align=V_CENTER) {
+    translate([align.x * 0.3 * gnomon_radius, align.y * gnomon_radius, align.z * gnomon_radius])
+    build_round_top_block();
+
+    // Child nodes
 }
