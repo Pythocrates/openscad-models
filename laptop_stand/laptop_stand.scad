@@ -18,21 +18,18 @@ module leg_inner_shape() {
 module leg() {
     difference() {
         union() {
-            hull() { yspread(spacing=120) { xcyl(h=5, d=30, $fn=FN); } }
-            hull() { zspread(spacing=120, sp=[0, 0, 0]) { xcyl(h=5, d=30, $fn=FN); } }
-        }
-        leg_inner_shape();
-    }
-    zmove(120) tube(h=5, id=6.2, od=30, orient=ORIENT_X, align=V_CENTER, $fn=FN);
-    difference() {
-        union() {
-            intersection() {
-                leg_inner_shape();
-                zmove((120 ) / 2) sparse_strut(h=120 + 30, l=120 + 30, thick=5, strut=2.5, maxang=50, max_bridge=25);
+            zmove(-15) hull() {
+                xmove(5) yspread(spacing=120) { top_half() {xcyl(h=1, d=30, align=V_LEFT, $fn=FN); }}
+                yspread(spacing=100) { top_half() {xcyl(h=20, d=2, align=V_LEFT, $fn=FN); }}
+
             }
-            zmove(90) cuboid([5, 30, 15]);
+            hull() { zspread(spacing=120, sp=[0, 0, 0]) { xcyl(h=10, d=30, $fn=FN); } }
         }
+        //#leg_inner_shape();
+        zmove(120) xcyl(h=5, d=6.2, $fn=FN);
+        zmove(120) xspread(spacing=2 * (5 - 0.2)) xcyl(h=5, d=65 + 2, $fn=FN);
         zmove(90 + 30) yrot(90) arc_of(n=5, r=30, sa=-20, ea=20) zcyl(h=5, d=3.2, $fn=FN);
+
     }
 }
 
@@ -74,7 +71,7 @@ module parts() {
 
 module assembly() {
     xflip_copy(200 / 2 - 5 - 5 / 2) leg();
-    zmove(120 + 30 / 2) top_plate(inclination=5);
+    zmove(120 + 30 / 2) top_plate(inclination=6);
 }
 
 //parts();
