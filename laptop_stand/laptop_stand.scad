@@ -64,6 +64,23 @@ module top_plate(inclination=0) {
     }
 }
 
+module front_stop(inclination=0) {
+    color("red") zmove(-15) xrot(inclination) zmove(15) {
+        difference() {
+            hull() {
+                ymove(10) cuboid([20, 125, 3], fillet=1.5, edges=EDGE_BOT_FR, align=V_DOWN + V_FRONT, $fn=FN);
+                zmove(-15) xcyl(h=20, r=10, $fn=FN);
+            }
+            zmove(-15) xcyl(h=30, d=6.2, $fn=FN);
+        }
+        difference() {
+            ymove(-75) cuboid([20, 10, 5 + 1.2], fillet=2.5, edges=EDGE_TOP_FR, align=V_UP + V_FRONT, $fn=FN);
+            ymove(-75) cuboid([20, 5 + 0.2, 5 + 0.4], align=V_UP + V_FRONT);
+        }
+        ymove(-110) cuboid([20, 5, 20], fillet=2.5, edges=EDGES_X_TOP, align=V_UP + V_FRONT, $fn=FN);
+    }
+}
+
 module parts() {
     //leg();
     zmove(-30) top_plate();
@@ -72,6 +89,7 @@ module parts() {
 module assembly() {
     xflip_copy(200 / 2 - 5 - 5 / 2) leg();
     zmove(120 + 30 / 2) top_plate(inclination=6);
+    zmove(120 + 30 / 2) front_stop(inclination=6);
 }
 
 //parts();
