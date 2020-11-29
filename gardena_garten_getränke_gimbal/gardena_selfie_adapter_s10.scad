@@ -18,11 +18,10 @@ module adapter_shaft() {
     }
     xmove(59) xcyl(r=5.2, l=14, $fn=6);
     hull() {
-        yrot(90) cyl(r=9.25, l=32, align=V_UP, chamfer2=3, $fn=FN);
-        xmove(-5) yrot(90) cyl(r=5, l=32, align=V_UP, chamfer2=3, $fn=FN);
+        yrot(90) zmove(32) cyl(r=9.25, l=40 + 8.25 + 4, align=V_DOWN, chamfer2=3, $fn=FN);
+        //xmove(-5) yrot(90) cyl(r=5, l=32, align=V_UP, chamfer2=3, $fn=FN);
     }
     xrot_copies(n=6) prismoid(size1=[40.658, 2], size2=[40.658, 11.15], h=8.009, orient=ORIENT_Y, align=V_FRONT + V_RIGHT);
-    xcyl(r=5, h=20, align=V_LEFT, $fn=FN);
     //xmove(-20) xcyl(r=7, h=1.5, align=V_RIGHT, $fn=FN);
     //xmove(-10) xcyl(r=7, h=1.5, align=V_LEFT, $fn=FN);
 }
@@ -44,7 +43,7 @@ module s10_landscape_shape(height) {
     difference() {
     hull($fn=FN) {
         zmove(-height / 2) cuboid([phone_height + 4, phone_thickness + 4, 1], align=V_DOWN);
-        zmove(-20) ycyl(h=phone_thickness + 4, r=5);
+        zmove(-18) ycyl(h=phone_thickness + 4, r=9.25);
     }
         zmove(-15) xspread(spacing=70) cuboid([3, phone_thickness + 4, 10], fillet=1.5, edges=EDGES_Y_ALL, $fn=FN);
     }
@@ -56,7 +55,7 @@ module s10_landscape_shape(height) {
 
 module full_gimbal() {
     adapter_shaft();
-    translate([-14, 0, 20]) zrot(90) s10_landscape_shape(height=10);
+    translate([-14, 0, 18]) zrot(90) s10_landscape_shape(height=10);
 }
 
 
