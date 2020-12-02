@@ -6,40 +6,24 @@ use <BOSL/transforms.scad>
 
 FN = 120;
 
-module sleeve1() {
-    intersection() {
-        #cuboid([50, 25, 5]);
-        difference() {
-            scale(1.1) remote_dummy();
-            remote_dummy();
-        }
-    }
-}
 
-module sleeve2() {
-    r1 = 23.3; cy1 = r1 - 8.67;
-    r2 = 52.4; cy2 = -r2 + 8.95;
-    r3 = 2;
-    thickness = 1;
-
+module sleeve(r_top, r_bottom, r_side, d_vertical, thickness, height=1) {
     difference() {
-        minkowski() {
-            intersection() {
-                ymove(cy1) color("red") zcyl(h=1, r=r1 - r3, $fn=FN);
-                ymove(cy2) color("red") zcyl(h=1, r=r2 - r3, $fn=FN);
-            }
-            zcyl(r=thickness + r3, h=1, $fn=FN);
-        }
-
-        minkowski() {
-            intersection() {
-                ymove(cy1) color("red") zcyl(h=1, r=r1 - r3, $fn=FN);
-                ymove(cy2) color("red") zcyl(h=1, r=r2 - r3, $fn=FN);
-            }
-            zcyl(r=r3, h=1, $fn=FN);
-        }
+        shape(r_top, r_bottom, r_side, d_vertical, thickness=thickness, height=height);
+        shape(r_top, r_bottom, r_side, d_vertical, height=height);
     }
 }
 
 
-sleeve2();
+module shape(r_top, r_bottom, r_side, d_vertical, thickness=0, height=1) {
+    minkowski() {
+        intersection() {
+            ymove(r_bottom - d_vertical) zcyl(h=height, r=r_bottom - r_side, $fn=FN);
+            ymove(-r_top) zcyl(h=height, r=r_top - r_side, $fn=FN);
+        }
+        zcyl(r=r_side + thickness, h=height, $fn=FN);
+    }
+}
+
+
+sleeve(r_top=52.4, r_bottom=23.3, r_side=2, d_vertical=8.95 + 8.67, thickness=1, height=3);
