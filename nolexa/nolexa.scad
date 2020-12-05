@@ -36,7 +36,8 @@ module shape(r_top, r_bottom, r_side, d_vertical, thickness=0, height=1) {
 module rounded_sleeve(r_top, r_bottom, r_side, d_vertical, thickness, height=1) {
     intersection() {
         sleeve(r_top=r_top, r_bottom=r_bottom, r_side=r_side, d_vertical=d_vertical, thickness=thickness, height=height);  // 4a
-        translate([0, 15, 38 + 24.5]) staggered_sphere(d=150, $fn=FN);
+        translate([0, 15, 38 + 24.9]) staggered_sphere(d=150, $fn=FN);
+        translate([0, -67.8, 18]) staggered_sphere(d=150, $fn=FN);
         //sphere(d=30, $fn=FN);
     }
 }
