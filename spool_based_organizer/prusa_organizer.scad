@@ -100,6 +100,12 @@ module full_drawer(h, or, ir, wall_thickness=1, base_thickness=1, rotation=0) {
 }
 
 
+module half_drawer(h, or, ir, wall_thickness=1, base_thickness=1, rotation=0) {
+    color("blue") base_plate(h=base_thickness, or=spool_outer_radius, ir=spool_inner_radius, rotation=-0);
+    color("blue") enclosure(h=(spool_inner_height - 0.5) / 2 - base_thickness, or=spool_outer_radius, ir=spool_inner_radius, rotation=-0);
+}
+
+
 module cut_out_sector(r_max, a_min, a_max) {
     difference() {
         children();
@@ -111,4 +117,6 @@ module cut_out_sector(r_max, a_min, a_max) {
 
 //zmove(0.1) spool(h=spool_inner_height, or=spool_outer_radius, ir=spool_inner_radius);
 
-color("blue") full_drawer(h=spool_inner_height, or=spool_outer_radius, ir=spool_inner_radius, rotation=-0);
+//color("blue") xflip() full_drawer(h=spool_inner_height, or=spool_outer_radius, ir=spool_inner_radius, rotation=-0);
+color("blue") xflip()
+    half_drawer(h=spool_inner_height, or=spool_outer_radius, ir=spool_inner_radius, rotation=-0);
