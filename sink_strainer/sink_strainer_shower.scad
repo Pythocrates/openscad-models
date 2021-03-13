@@ -16,7 +16,6 @@ module outer_shape(sink_radius, height, bottom_radius, thickness, spherical=true
             zmove(z_center) sphere(r=bottom_radius, $fn=FN);
             cyl(r=sink_radius, h=bottom_radius * 2, align=V_BOTTOM, $fn=FN);
         } else {
-            //zmove(-height) zcyl(r=sink_radius, h=thickness, align=V_TOP, $fn=FN);
             zmove(-height) zcyl(r=sink_radius, h=height, align=V_TOP, $fn=FN);
         }
     }
@@ -45,6 +44,14 @@ module full_cap(sink_radius, height, bottom_radius, thickness, spherical) {
 }
 
 
+module grid_cap(sink_radius, height, bottom_radius, thickness, spherical, center_offset=0) {
+    difference() {
+        full_cap(sink_radius, height, bottom_radius, thickness, spherical=spherical);
+        yflip_copy() yspread(n=7, spacing=3 + 1.5, sp=[0, center_offset, 0]) cuboid([2 * bottom_radius, 3, bottom_radius], align=V_BOTTOM);
+    }
+}
+
+
 module outer_handle(sink_radius, height, bottom_radius, thickness, spherical) {
     intersection() {
         cuboid([2 * sink_radius - 0.4, 6.5, height * 2], align=V_BOTTOM);
@@ -58,20 +65,8 @@ module shower_sink_strainer(sink_radius, height, bottom_radius, thickness=1, sph
         union() {
             outer_handle(sink_radius, height, bottom_radius, thickness, spherical=spherical);
             base_tube(sink_radius, height, bottom_radius, thickness);
-            difference() {
-                full_cap(sink_radius, height, bottom_radius, thickness, spherical=spherical);
-                zrot(90) for (i = [0:6]) {
-                    ymove(0 + i * (3 + 1.5)) cuboid([2 * bottom_radius, 3, bottom_radius], align=V_BOTTOM);
-                    ymove(-0 - i * (3 + 1.5)) cuboid([2 * bottom_radius, 3, bottom_radius], align=V_BOTTOM);
-                }
-            }
-            difference() {
-                full_cap(sink_radius, height, bottom_radius, thickness, spherical=spherical);
-                for (i = [0: 6]) {
-                    ymove(6 + i * (3 + 1.5)) cuboid([2 * bottom_radius, 3, bottom_radius], align=V_BOTTOM);
-                    ymove(-6 - i * (3 + 1.5)) cuboid([2 * bottom_radius, 3, bottom_radius], align=V_BOTTOM);
-                }
-            }
+            zrot(90) grid_cap(sink_radius, height, bottom_radius, thickness, spherical=spherical);
+            grid_cap(sink_radius, height, bottom_radius, thickness, spherical=spherical, center_offset=6);
         }
         zmove(-53) ycyl(h=4.5, r=bottom_radius, $fn=FN);
     }
