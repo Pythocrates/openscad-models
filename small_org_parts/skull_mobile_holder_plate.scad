@@ -1,4 +1,4 @@
-// This is a small holder to hold the TAN generator in the desk drawer.
+// This is a lightweight plate for the skull based smartphone stand.
 
 include <BOSL/constants.scad>
 use <BOSL/shapes.scad>
@@ -8,8 +8,11 @@ FN = 60;
 
 
 module plate() {
-    size = [72, 71, 3.8];
-    sparse_strut(l=size.x, h=size.y, thick=size.z, strut=2, maxang=60);
+    size = [4.0, 72.25, 61];
+    difference() {
+        sparse_strut(l=size.y, h=size.z, thick=size.x, strut=2, maxang=60);
+        cuboid(size - [2, 4, 4], align=V_RIGHT);
+    }
 }
 
 
