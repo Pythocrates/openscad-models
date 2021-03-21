@@ -56,6 +56,15 @@ module glass_holder_holder(epsilon=0) {
 }
 
 
+module guitar_neck_holder() {
+    zmove(-(6 + 2)) cuboid([13, 2, 11 + 20 + 6 + 2], align=V_UP + V_BACK, fillet=1, edges=EDGES_X_TOP, $fn=FN);
+    cuboid([13, 6, 6], align=V_DOWN + V_FRONT);
+    zmove(20 + 10) {
+        xspread(spacing=9 + 2) xrot(-30, cp=[0, 1, 0]) ymove(2) cuboid([2, 25 + 2, 2], align=V_FRONT, fillet=1, edges=EDGES_X_ALL, $fn=FN);
+    }
+}
+
+
 module bench(scale=1, long=false) {
     scale(scale) {
         xspread(spacing=long ? 82 : 62) leg();
@@ -81,10 +90,12 @@ module tightness_test() {
 
 
 //bench(scale=2, long=false);
-//translate([-49, -35, 32]) glass();
-translate([-49, -35, 32 + 2]) glass_holder();
-//translate([-49, -35, 32 + 1]) glass_holder_holder();
-
+translate([-45, -35, 32]) {
+    //glass();
+    //zmove(2) glass_holder();
+    //zmove(1) glass_holder_holder();
+}
+guitar_neck_holder();
 
 //panel(scale=2);
 
