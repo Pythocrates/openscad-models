@@ -82,6 +82,28 @@ module bench(scale=1, long=false) {
 }
 
 
+module base_plate(scale=1, long=false, thickness=2) {
+    color("white") scale(scale) ymove(-15) {
+        cuboid([1.5 * (long ?  82 : 62), 50, thickness / scale], align=V_DOWN);
+        //xrot(90) zrot(90) sparse_strut(h=50, l=1.5 * (long ?  82 : 62), thick=thickness / scale, strut=2, maxang=65, max_bridge=10, align=V_LEFT);
+        //xspread(spacing=long ? 82 : 62) {
+        xflip_copy() xmove(long ? 82 / 2 : 62 / 2) {
+            
+            cuboid([6, 40, thickness / scale], align=V_DOWN, fillet=3, edges=EDGES_Z_ALL);
+            yflip_copy(cp=[0, 0.5, 0]) {
+            ymove(-9) difference() {
+                cuboid([5, 2.5, 2], align=V_UP + V_BACK);
+                cuboid([4, 2, 2], align=V_UP + V_BACK);
+                cuboid([5, 2.5, 2], align=V_UP + V_BACK + V_RIGHT);
+                //cuboid([5, 2.5, 2], align=V_UP + V_BACK);
+                //cuboid([4.5, 2, 2], align=V_UP + V_BACK);
+            }
+            }
+        }
+    }
+}
+
+
 // Testing the tightness of the hole between the two boards.
 // Tested with 0.2mm QUALITY, legs with ColorFabb PLA/PHA, panels with FormFutura EasyFil
 // +0.15 fits nicely and is easily removable
@@ -96,6 +118,18 @@ module tightness_test() {
 }
 
 
+intersection() {
+base_plate(scale=2, thickness=2);
+/*
+union() {
+ymove(-30) xmove(62) cuboid([15, 80, 10]);
+ymove(-30) xmove(-62) cuboid([15, 80, 10]);
+ymove(-30) cuboid([124, 8, 1]);
+}
+*/
+}
+
+if (false) {
 bench(scale=2, long=false);
 translate([-35, -35, 32]) {
     glass();
@@ -103,6 +137,7 @@ translate([-35, -35, 32]) {
     zmove(1) glass_holder_holder(epsilon=0.1);
 }
 translate([35, 0, 58]) guitar_neck_holder();
+}
 
 //panel(scale=2);
 
