@@ -66,8 +66,8 @@ module top_plate(goat_length, goat_thickness) {
 
 // The part connecting the fence post to the planetary gear under the top plate.
 module pole_adapter() {
-    inner_pole_diameter = 38.5;
-    adapter_depth = 30;
+    inner_pole_diameter = 38.35;
+    adapter_depth = 40;
     cone_height = 5;
 
     zmove(-cone_height) {
@@ -110,14 +110,13 @@ module goat(length, thickness) {
 // The full assembly.
 //annular_assembly(n=4);
 
-/*
 intersection() {
-top_plate(goat_length=150, goat_thickness=15);
-zcyl(d=70, h=20);
+//top_plate(goat_length=150, goat_thickness=15);
+//zcyl(d=70, h=20);
 }
-*/
+
 intersection() {
 pole_adapter();
-zmove(0.1) zcyl(d=70, h=20, align=V_UP);
+//zmove(0.1) zcyl(d=70, h=20, align=V_UP);
 }
 //fixable_goat(length=150, thickness=15);
