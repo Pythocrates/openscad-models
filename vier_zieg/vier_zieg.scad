@@ -65,7 +65,7 @@ module top_plate(goat_length, goat_thickness) {
 }
 
 // The part connecting the fence post to the planetary gear under the top plate.
-module pole_adapter() {
+module hexagonal_pole_adapter() {
     //inner_pole_diameter = 38.35; // too loose
     inner_pole_diameter = 39;
     adapter_depth = 40;
@@ -81,6 +81,25 @@ module pole_adapter() {
     zcyl(d=1 + 6.7, 15 + 2, align=V_UP, $fn=6);
     zcyl(d=13, 2, align=V_UP, $fn=FN);
 
+}
+
+
+// The part connecting the fence post to the grooved ball bearing (6004 2RS 20x42x12).kj
+module bearing_pole_adapter() {
+    //inner_pole_diameter = 38.35; // too loose
+    inner_pole_diameter = 39;
+    adapter_depth = 40;
+    cone_height = 5;
+
+    zmove(-cone_height) {
+        zcyl(d1=inner_pole_diameter, d2=inner_pole_diameter + cone_height, h=cone_height, align=V_UP, $fn=FN);
+        difference() {
+            zcyl(d=inner_pole_diameter, h=adapter_depth, align=V_DOWN, $fn=FN);
+            translate([0, inner_pole_diameter / 2, -adapter_depth]) cuboid([10, 10, 10], align=V_TOP + V_FRONT);
+        }
+    }
+    cyl(d=20 - 0.0, 2 + 12, align=V_UP, chamfer=0.5, $fn=FN);
+    zcyl(d=26, 2, align=V_UP, $fn=FN);
 }
 
 
@@ -120,7 +139,7 @@ intersection() {
 }
 
 intersection() {
-pole_adapter();
-//zmove(0.1) zcyl(d=70, h=20, align=V_UP);
+    bearing_pole_adapter();
+    //zmove(0.1) zcyl(d=70, h=20, align=V_UP);
 }
 //fixable_goat(length=150, thickness=15);
