@@ -64,6 +64,21 @@ module top_plate(goat_length, goat_thickness) {
     }
 }
 
+
+// The adapter between the already printed top plate and the bearing.
+module bearing_plate_adapter() {
+    difference() {
+        union() {
+            //zcyl(d=51.7 - 4 - 0.5, h=15 + 2, align=V_DOWN, $fn=FN);
+            zmove(-2) zcyl(d=51.7 - 0.1, h=15, align=V_DOWN, $fn=FN);
+        }
+        zmove(-2 - 3) zcyl(d=42, h=12, align=V_DOWN, $fn=FN);
+        zmove(-2 - 1) zcyl(d=35, h=12 + 2, align=V_DOWN, $fn=FN);
+    }
+
+}
+
+
 // The part connecting the fence post to the planetary gear under the top plate.
 module hexagonal_pole_adapter() {
     //inner_pole_diameter = 38.35; // too loose
@@ -134,12 +149,14 @@ module goat(length, thickness) {
 //annular_assembly(n=4);
 
 intersection() {
-//top_plate(goat_length=150, goat_thickness=15);
-//zcyl(d=70, h=20);
+    //top_plate(goat_length=150, goat_thickness=15);
+    //zcyl(d=70, h=20);
 }
 
+bearing_plate_adapter();
+
 intersection() {
-    bearing_pole_adapter();
+    //bearing_pole_adapter();
     //zmove(0.1) zcyl(d=70, h=20, align=V_UP);
 }
 //fixable_goat(length=150, thickness=15);
