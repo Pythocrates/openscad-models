@@ -32,30 +32,45 @@ WHEEL_THICKNESS = 5;
 WHEEL_RADIAL_TOLERANCE = 1;
 WHEEL_AXIAL_TOLERANCE = 1;
 
+SKIN_WIDTH = 94;  // 753;
+SKIN_LENGTH = 100;  // 803;
+SKIN_HEIGHT = 15;  // 120;
+SKIN_WIDTH_MARGIN = 8.5;  // 67;
+SKIN_LENGTH_MARGIN = 9.0;  // 72;
+width_margin = 13;
+length_margin = 14;
+
+WALL_THICKNESS = 3.75; // 30;
+VERTICAL_EDGE_RADIUS = 3.5;  // 25;
+TOLERANCE = 0.2;  // 10;
+BODY_WIDTH = SKIN_WIDTH - 2 * WALL_THICKNESS - 2 * TOLERANCE;
+BODY_LENGTH = SKIN_LENGTH - 2 * WALL_THICKNESS - 2 * TOLERANCE;
+BODY_HEIGHT = 28;  // 227;
+
+WHEEL_DIAMETER = 12;
+
+RADIAL_SLACK = 1;
+AXIAL_SLACK = 1;
+
+SCREW_HEAD_OUTER_DIAMETER = 30;
+SCREW_HEAD_INNER_DIAMETER = 21;
+SCREW_HEAD_THICKNESS = 2;
+
+SCREW_THREAD_DIAMETER = 17;
+MUG_DIAMETER = 80;
+
+TOP_FILLET_RADIUS = 1;
+
 
 module rounded_corner(xdir, ydir) {
-    SKIN_WIDTH = 94;  // 753;
-    SKIN_LENGTH = 100;  // 803;
-    VERTICAL_EDGE_RADIUS = 3.5;  // 25;
-    OFFSET_X = SKIN_WIDTH / 2 - VERTICAL_EDGE_RADIUS;
-    OFFSET_Y = SKIN_LENGTH / 2 - VERTICAL_EDGE_RADIUS;
-    SKIN_HEIGHT = 15;  // 120;
-    TOP_FILLET_RADIUS = 1;
+    x_offset = SKIN_WIDTH / 2 - VERTICAL_EDGE_RADIUS;
+    y_offset = SKIN_LENGTH / 2 - VERTICAL_EDGE_RADIUS;
 
-    translate([xdir * OFFSET_X, ydir * OFFSET_Y, 0])
+    translate([xdir * x_offset, ydir * y_offset, 0])
         cyl(r=VERTICAL_EDGE_RADIUS, h=SKIN_HEIGHT, fillet2=TOP_FILLET_RADIUS, align=V_UP, $fn=FN);
 }
 
 module skin() {
-    SKIN_WIDTH = 94;  // 753;
-    SKIN_LENGTH = 100;  // 803;
-    SKIN_HEIGHT = 15;  // 120;
-    SKIN_WIDTH_MARGIN = 8.5;  // 67;
-    SKIN_LENGTH_MARGIN = 9.0;  // 72;
-    TOP_FILLET_RADIUS = 1;
-    VERTICAL_EDGE_RADIUS = 3.5;  // 25;
-    WALL_THICKNESS = 3.75;  // 30;
-
     for (i = FLAGS) if (i == SKIN) {
         difference() {
             union() {
@@ -97,24 +112,6 @@ module plate_depressor() {
 }
 
 module top_plate() {
-    SCREW_HEAD_OUTER_DIAMETER = 30;
-    SCREW_HEAD_INNER_DIAMETER = 21;
-    SCREW_HEAD_THICKNESS = 2;
-    SCREW_THREAD_DIAMETER = 17;
-    MUG_DIAMETER = 80;
-    WALL_THICKNESS = 3.75;  // 30;
-
-    VERTICAL_EDGE_RADIUS = 3.5;  // 25;
-    SKIN_WIDTH = 94;  // 753;
-    SKIN_LENGTH = 100;  // 803;
-    SKIN_HEIGHT = 15;  // 120;
-    SKIN_WIDTH_MARGIN = 8.5;  // 67;
-    SKIN_LENGTH_MARGIN = 9.0;  // 72;
-    TOLERANCE = 0.2;  // 10;
-    BODY_WIDTH = SKIN_WIDTH - 2 * WALL_THICKNESS - 2 * TOLERANCE;
-    BODY_LENGTH = SKIN_LENGTH - 2 * WALL_THICKNESS - 2 * TOLERANCE;
-    BODY_HEIGHT = 28;  // 227;
-
     for (i = FLAGS) if (i == TOP_PLATE){
         // Mug shape
         zmove(BODY_HEIGHT) {
@@ -138,13 +135,6 @@ module top_plate() {
 
 
 module screw_support_and_mug_rails() {
-    SCREW_HEAD_OUTER_DIAMETER = 30;
-    SCREW_HEAD_INNER_DIAMETER = 21;
-    SCREW_HEAD_THICKNESS = 2;
-    SCREW_THREAD_DIAMETER = 17;
-    MUG_DIAMETER = 80;
-    WALL_THICKNESS = 3.75;  // 30;
-
     color("gray") difference() {
         cuboid([SCREW_HEAD_OUTER_DIAMETER + 6, MUG_DIAMETER + 12, 3 * SCREW_HEAD_THICKNESS], align=V_DOWN);
         zcyl(d=SCREW_HEAD_OUTER_DIAMETER + 1, h=SCREW_HEAD_THICKNESS + 0.2, align=V_DOWN, $fn=FN);
@@ -160,22 +150,6 @@ module lifting_nut() {
 
 
 module upper_body() {
-    SKIN_WIDTH = 94;  // 753;
-    SKIN_LENGTH = 100;  // 803;
-    SKIN_HEIGHT = 15;  // 120;
-    SKIN_WIDTH_MARGIN = 8.5;  // 67;
-    SKIN_LENGTH_MARGIN = 9.0;  // 72;
-
-    WALL_THICKNESS = 3.75; // 30;
-    VERTICAL_EDGE_RADIUS = 3.5;  // 25;
-    TOLERANCE = 0.2;  // 10;
-    BODY_WIDTH = SKIN_WIDTH - 2 * WALL_THICKNESS - 2 * TOLERANCE;
-    BODY_LENGTH = SKIN_LENGTH - 2 * WALL_THICKNESS - 2 * TOLERANCE;
-    BODY_HEIGHT = 28;  // 227;
-    SCREW_HEAD_OUTER_DIAMETER = 30;
-    SCREW_HEAD_INNER_DIAMETER = 21;
-    SCREW_HEAD_THICKNESS = 2;
-
     color("gray") zmove(BODY_HEIGHT * .5) difference() {
         cuboid([BODY_WIDTH, BODY_LENGTH, BODY_HEIGHT * .5], align=V_UP, fillet=VERTICAL_EDGE_RADIUS, edges=EDGES_Z_ALL, $fn=FN);
         cuboid([BODY_WIDTH - 2 * WALL_THICKNESS , BODY_LENGTH - 2 * WALL_THICKNESS, BODY_HEIGHT * .5 - WALL_THICKNESS], align=V_UP, fillet=VERTICAL_EDGE_RADIUS, edges=EDGES_Z_ALL, $fn=FN);
@@ -199,7 +173,6 @@ module square_nut() {
 
 
 module wheel() {
-    WHEEL_THICKNESS = 5;
     difference() {
         color("black") xcyl(d=12, h=WHEEL_THICKNESS, $fn=FN);
         color("black") xcyl(d=3.5, h=WHEEL_THICKNESS, $fn=FN);
@@ -212,15 +185,11 @@ module wheel_axis() {
 }
 
 module wheelhouse() {
-    RADIAL_SLACK = 1;
-    AXIAL_SLACK = 1;
     yrot(-90) slot(p1=[0, 0, 0], p2=[2.5, -5.5, 0], h=WHEEL_THICKNESS + 1, d1=12 + 2 * RADIAL_SLACK, d2=12 + 2 * RADIAL_SLACK, $fn=FN);
 }
 
 
 module wheel_unit() {
-    BODY_HEIGHT = 28;  // 227;
-    WHEEL_DIAMETER = 12;
     height = BODY_HEIGHT / 2;
 
     color("gray") difference() {
@@ -235,21 +204,6 @@ module wheel_unit() {
 }
 
 module lower_body() {
-    SKIN_WIDTH = 94;  // 753;
-    SKIN_LENGTH = 100;  // 803;
-    SKIN_HEIGHT = 15;  // 120;
-    SKIN_WIDTH_MARGIN = 8.5;  // 67;
-    SKIN_LENGTH_MARGIN = 9.0;  // 72;
-    width_margin = 13;
-    length_margin = 14;
-
-    WALL_THICKNESS = 3.75; // 30;
-    VERTICAL_EDGE_RADIUS = 3.5;  // 25;
-    TOLERANCE = 0.2;  // 10;
-    BODY_WIDTH = SKIN_WIDTH - 2 * WALL_THICKNESS - 2 * TOLERANCE;
-    BODY_LENGTH = SKIN_LENGTH - 2 * WALL_THICKNESS - 2 * TOLERANCE;
-    BODY_HEIGHT = 28;  // 227;
-
     difference() {
         union() {
             color("gray") cuboid([BODY_WIDTH - width_margin, BODY_LENGTH - length_margin, BODY_HEIGHT * .5], align=V_UP, fillet=VERTICAL_EDGE_RADIUS, edges=EDGES_Z_ALL, $fn=FN);
@@ -270,10 +224,8 @@ module lower_body() {
 module body() {
     top_plate();
     upper_body();
-    //lower_body();
+    lower_body();
 }
-
-
 
 
 module assembly() {
