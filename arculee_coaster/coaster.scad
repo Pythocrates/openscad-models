@@ -15,14 +15,19 @@ module lifting_screw() {
     if (bitwise_is_equal(VISIBILITY_MASK, SCREW)) {
         difference() {
             union() {
-                zmove(-4.2) metric_bolt(headtype="countersunk", size=17 - 0.5, l=15, details=true, pitch=4.4, phillips="#2", $fn=FN);
-                difference() {
-                    zcyl(h=2, d=30, align=V_DOWN, $fn=FN);
-                    zcyl(h=2, d=15, align=V_DOWN, $fn=FN);
-                }
+                zmove(-4.2) metric_bolt(headtype="countersunk", size=17 - TOLERANCE, l=15, details=true, pitch=4.4, phillips="#2", $fn=FN);
+                zcyl(h=2, d=SCREW_HEAD_OUTER_DIAMETER + 1 - TOLERANCE, align=V_DOWN, $fn=FN);
+                zcyl(h=5, d=8, align=V_DOWN, $fn=FN);
+                //zcyl(h=WALL_THICKNESS, d=SCREW_HEAD_OUTER_DIAMETER - 6, align=V_UP, $fn=FN);
             }
-            zmove(6) ycyl(d=23.25 + 0.2, h=2.33 + 0.2, $fn=FN);
+            zmove(15) sphere(r=15 + 3, $fn=FN);
         }
+        //prismoid([SCREW_HEAD_OUTER_DIAMETER - 6, 2], [SCREW_HEAD_OUTER_DIAMETER - 6 - 5, 2], WALL_THICKNESS);
+        intersection() {
+            cuboid([SCREW_HEAD_OUTER_DIAMETER - 5, 2, WALL_THICKNESS], align=V_UP);
+            zcyl(h=WALL_THICKNESS, d=SCREW_HEAD_OUTER_DIAMETER - 5, align=V_UP, $fn=FN);
+        }
+        zflip() prismoid([SCREW_HEAD_OUTER_DIAMETER - 8, 2], [SCREW_HEAD_OUTER_DIAMETER - 8 - 5, 2], WALL_THICKNESS);
     }
 }
 
@@ -173,7 +178,6 @@ module wheelhouse() {
 
 
 module wheel_unit() {
-    height = BODY_HEIGHT / 2;
     height = 7;
 
     if (bitwise_is_equal(VISIBILITY_MASK, WHEEL_UNIT)) {

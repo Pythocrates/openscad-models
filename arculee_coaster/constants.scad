@@ -45,9 +45,9 @@ TOP_FILLET_RADIUS = 1;
 VISIBILITY_MASK = (
     0 * (1 * bitwise_lsh(1, WHEEL_UNIT) + 1 * bitwise_lsh(1, NUT) + 1 * bitwise_lsh(1, LOWER_BODY)) +
     0 * (1 * bitwise_lsh(1, TOP_PLATE) + 1 * bitwise_lsh(1, UPPER_BODY) + 1 * bitwise_lsh(1, PLATE_DEPRESSOR)) +
-    0 * (1 * bitwise_lsh(1, TOP_PLATE)) +
     0 * (1 * bitwise_lsh(1, SKIN)) +
-    1 * (1 * bitwise_lsh(1, UPPER_BODY)) +
+    0 * (1 * bitwise_lsh(1, TOP_PLATE)) +
+    0 * (1 * bitwise_lsh(1, UPPER_BODY)) +
     1 * (1 * bitwise_lsh(1, SCREW)) +
     0
 );
