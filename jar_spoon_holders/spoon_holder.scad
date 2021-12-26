@@ -21,7 +21,7 @@ module spoon_holder(radius, thickness, height) {
         ymove(-open_radius) cuboid([gap, 12 * thickness, 3 * height]);
 
         zmove(0.5) ymove(-open_radius - thickness - 3){
-            xmove((10 + gap) / 2) xcyl(d=3.6, h=2, align=V_LEFT, $fn=FN);  // place for the screw head 
+            xmove((10 + gap) / 2) xcyl(d=3.6, h=2, align=V_LEFT, $fn=FN);  // place for the screw head
             xmove(-(10 + gap) / 2) xcyl(d=4.4, h=2, align=V_RIGHT, $fn=6);  // place for the nut
             xcyl(d=2.2, h=10 + gap, $fn=FN);
         }
@@ -51,6 +51,7 @@ module nut_test_block() {
 SMALL_RADIUS = 57.5 / 2;
 SMALL_THICKNESS = 2;
 SMALL_HEIGHT = 4;
-spoon_holder(radius=SMALL_RADIUS, thickness=SMALL_THICKNESS, height=SMALL_HEIGHT);
+BIG_RADIUS = SMALL_RADIUS + 2.5;
+spoon_holder(radius=BIG_RADIUS, thickness=SMALL_THICKNESS, height=SMALL_HEIGHT);
 
 //nut_test_block();
