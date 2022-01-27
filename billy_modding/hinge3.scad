@@ -114,18 +114,19 @@ connector_2(angle=angle);
 
 module arm() {
     difference() {
-        height = 7.5;
+        height = 2 * 7.5;
         length = 30;
         spring_diameter = 6.5;
         spring_thickness = 1.5;
 
         // This is the arm.
         zmove(height / 2) slot(l=length, h=height, $fn=FN);
-        translate([length / 2, 0, 0]) zcyl(d=2, h=height, align=V_UP, $fn=FN);
-        translate([-length / 2, 0, 0]) zcyl(d=2, h=height, align=V_UP, $fn=FN);
+        translate([length / 2, 0, 0]) zcyl(d=2 + 0.2, h=height, align=V_UP, $fn=FN);
+        translate([-length / 2, 0, 0]) zcyl(d=3 + 0.1, h=height, align=V_UP, $fn=FN);
 
         zmove(1) translate([-length / 2, 0, 0]) zcyl(d=6.5, h=height - 1, align=V_UP, $fn=FN);
-        zmove(1) xmove(-length / 2) translate((spring_diameter / 2 - spring_thickness / 2) * [0, -1, 0]) cuboid([18, 1.5, height - 1], align=V_UP + V_RIGHT);
+        zmove(1) xmove(-length / 2) translate((spring_diameter / 2 - spring_thickness / 2) * [0, -1, 0]) cuboid([17, spring_thickness, height - 1], align=V_UP + V_RIGHT);
+        zmove(height / 2) xmove(-length / 2) zrot(45) cuboid([10, length, height / 2], align=V_UP);
     }
 }
 
@@ -134,14 +135,14 @@ module middle_piece() {
     height = 2 * 7.5;
     length = 39 + 2 * 5;
     spring_diameter = 6.5;
-    spring_thickness = 1.5;
+    spring_thickness = 1.4;
 
     difference() {
         slot(l=length, h=height, r=5, $fn=FN);
 
         yrot_copies(n=2) {
             translate([length / 2, 0, 0]) zcyl(d=6.5, h=height / 2 - 1, align=V_DOWN, $fn=FN);
-            zmove(height / 2) xmove(length / 2) translate((spring_diameter / 2 - spring_thickness / 2) * [0, 1, 0]) cuboid([18, 1.5, height - 1], align=V_DOWN + V_LEFT);
+            zmove(height / 2) xmove(length / 2) translate((spring_diameter / 2 - spring_thickness / 2) * [0, 1, 0]) cuboid([17, spring_thickness, height - 1], align=V_DOWN + V_LEFT);
             xmove(length / 2) zrot(45) cuboid([10, length, height / 2], align=V_UP);
         }
     }
