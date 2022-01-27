@@ -125,7 +125,7 @@ module arm() {
         translate([-length / 2, 0, 0]) zcyl(d=3 + 0.1, h=height, align=V_UP, $fn=FN);
 
         zmove(1) translate([-length / 2, 0, 0]) zcyl(d=6.5, h=height - 1, align=V_UP, $fn=FN);
-        zmove(1) xmove(-length / 2) translate((spring_diameter / 2 - spring_thickness / 2) * [0, -1, 0]) cuboid([17, spring_thickness, height - 1], align=V_UP + V_RIGHT);
+        zmove(1) xmove(-length / 2) translate((spring_diameter / 2 - spring_thickness / 2) * [0, -1, 0]) cuboid([18, spring_thickness, height - 1], align=V_UP + V_RIGHT);
         zmove(height / 2) xmove(-length / 2) zrot(45) cuboid([10, length, height / 2], align=V_UP);
     }
 }
@@ -142,7 +142,9 @@ module middle_piece() {
 
         yrot_copies(n=2) {
             translate([length / 2, 0, 0]) zcyl(d=6.5, h=height / 2 - 1, align=V_DOWN, $fn=FN);
-            zmove(height / 2) xmove(length / 2) translate((spring_diameter / 2 - spring_thickness / 2) * [0, 1, 0]) cuboid([17, spring_thickness, height - 1], align=V_DOWN + V_LEFT);
+            translate([-length / 2, 0, 0]) zcyl(d=3 + 0.1, h=height, align=V_UP, $fn=FN);
+
+            zmove(height / 2) xmove(length / 2) translate((spring_diameter / 2 - spring_thickness / 2) * [0, 1, 0]) cuboid([18, spring_thickness, height - 1], align=V_DOWN + V_LEFT);
             xmove(length / 2) zrot(45) cuboid([10, length, height / 2], align=V_UP);
         }
     }
@@ -163,6 +165,6 @@ module adapter_plate() {
 }
 
 
-arm();
-//middle_piece();
+//arm();
+middle_piece();
 //adapter_plate();
