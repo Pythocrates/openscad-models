@@ -9,8 +9,16 @@ FN = 120;
 X = 25;
 Y = 25;
 
+hole_distance = 32;
+hole_edge_distance = 38;
+wall_thickness = 19;
+
+
 module wall() {
-    cuboid([18, 200, 200], align=V_RIGHT + V_BACK + V_DOWN);
+    color("white") difference() {
+        cuboid([19, 200, 200], align=V_RIGHT + V_BACK);
+        translate([19, hole_edge_distance, 0]) zspread(n=4, spacing=hole_distance) xcyl(l=12, d=5, align=V_LEFT);
+    }
     //zmove(10) color("black") translate([X, Y, 0]) zcyl(h=100, r=2.5, align=V_DOWN, $fn=FN);
 }
 
@@ -152,19 +160,31 @@ module middle_piece() {
 
 
 module adapter_plate() {
-    hole_distance = 32;
-    hole_edge_distance = 38;
     hole_diameter = 5;
 
-    difference() {
-        cuboid([2, hole_distance + 2 * hole_diameter, hole_edge_distance + hole_diameter], align=V_RIGHT + V_BACK);
-        cuboid([2, 30 + 5, 15], align=V_RIGHT + V_BACK);
+    color("blue") {
+        difference() {
+            cuboid([10, hole_distance + 2 * hole_diameter, hole_edge_distance + hole_diameter], align=V_RIGHT + V_BACK);
+            cuboid([10, 30 + 5, 15], align=V_RIGHT + V_BACK);
+            ymove(30 - 5) xmove(10 / 2) zcyl(l=60, d=2 + 0.2, $fn=FN);
+        }
+        zflip_copy() zmove(7.5) ymove(30 - 5) difference() {
+            cuboid([10, 10, 10], align=V_RIGHT + V_UP);
+            xmove(10 / 2) zcyl(l=60, d=2 + 0.2, $fn=FN);
+        }
+        ymove(hole_edge_distance) zspread(spacing=hole_distance) cyl(h=10, d=hole_diameter - 0.2, chamfer1=0.5, orient=ORIENT_X, align=V_LEFT, $fn=FN);
     }
-    ymove(hole_edge_distance) zspread(spacing=hole_distance) cyl(h=10, d=hole_diameter - 0.2, chamfer1=0.5, orient=ORIENT_X, align=V_LEFT, $fn=FN);
+}
 
+module assembly() {
+    wall();
+    xmove(wall_thickness) adapter_plate();
+
+    yrot_copies(n=2) translate([-wall_thickness - 5, 2 * 5, -7.5]) rotate(90) arm();
+    ymove(-5) middle_piece();
 }
 
 
-//arm();
-middle_piece();
-//adapter_plate();
+
+//assembly();
+adapter_plate();
