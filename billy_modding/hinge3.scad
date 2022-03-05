@@ -37,6 +37,14 @@ adapter_plate_thickness = arm_width;
 adapter_plate_width = hole_edge_distance + hole_diameter;
 adapter_plate_height = hole_distance + 2 * hole_diameter;
 
+
+module screw() {
+    zcyl(l=20, d=3.5, align=V_DOWN, $fn=FN);
+    zflip() zmove(1) cylinder(h=3, d1=7, d2=3, $fn=FN);
+    zcyl(h=1, d=7, align=V_DOWN, $fn=FN);
+}
+
+
 module wall(angle=0) {
     zrot(angle) color("white") difference() {
         cuboid([wall_thickness, 200, 200], align=V_RIGHT + V_BACK);
@@ -109,11 +117,11 @@ module adapter_plate() {
     extrusion_angle = 55;
     color("blue") {
         difference() {
-            cuboid([adapter_plate_thickness, adapter_plate_width, adapter_plate_height], align=V_RIGHT + V_BACK);
+            cuboid([adapter_plate_thickness, adapter_plate_width, adapter_plate_height], fillet=5, edges=EDGES_X_ALL, align=V_RIGHT + V_BACK, $fn=FN);
             cuboid([adapter_plate_thickness, arm_length, arm_height], align=V_RIGHT + V_BACK);
-            //xmove(arm_width / 2) ymove(arm_length - arm_width / 2) zcyl(l=adapter_plate_height, d=pivot_bolt_diameter, $fn=FN);
             translate(pivot_offset - [wall_thickness, 0, 0]) zcyl(l=adapter_plate_height, d=pivot_bolt_diameter, $fn=FN);
             translate(pivot_offset - [wall_thickness, 0, 0]) zrot(55) cuboid([4 * arm_width, arm_width, arm_height]);
+            yspread(spacing=hole_edge_distance - pivot_offset.y / 2 -  2 * (adapter_plate_width - hole_edge_distance), n=2, sp=[adapter_plate_thickness, pivot_offset.y / 2, 0]) zspread(spacing=(adapter_plate_height + arm_height) / 2)  yrot(90) screw();
         }
         ymove(hole_edge_distance) zspread(spacing=hole_distance)
             cyl(h=adapter_plate_bolt_length, d=adapter_plate_bolt_diameter, chamfer1=0.5, orient=ORIENT_X, align=V_LEFT, $fn=FN);
