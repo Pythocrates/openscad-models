@@ -1,4 +1,4 @@
-// This is an angle stabilizer.
+// This is a frame for a teflon glider.
 
 include <BOSL/constants.scad>
 use <BOSL/shapes.scad>

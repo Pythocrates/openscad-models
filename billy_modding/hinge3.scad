@@ -37,6 +37,10 @@ adapter_plate_thickness = arm_width;
 adapter_plate_width = hole_edge_distance + hole_diameter;
 adapter_plate_height = hole_distance + 2 * hole_diameter;
 
+cover_thickness = 2;
+
+top_hinge_thickness = 8;
+
 
 module screw() {
     zcyl(l=20, d=3.5, align=V_DOWN, $fn=FN);
@@ -129,6 +133,18 @@ module adapter_plate() {
 }
 
 
+module adapter_plate_cover() {
+    TOLERANCE=0.1;
+    color("white") difference() {
+        cuboid([arm_length + arm_width + cover_thickness + 2, adapter_plate_width + cover_thickness, adapter_plate_height + 2 * cover_thickness], fillet=7, edges=EDGES_X_ALL, align=V_RIGHT + V_BACK, $fn=FN);
+        cuboid([adapter_plate_thickness, adapter_plate_width + TOLERANCE, adapter_plate_height + 2 * TOLERANCE], fillet=5, edges=EDGES_X_ALL, align=V_RIGHT + V_BACK, $fn=FN);
+        //cuboid([adapter_plate_thickness + 10 - cover_thickness, adapter_plate_width, middle_piece_height + 2], align=V_RIGHT + V_BACK, $fn=FN);
+        // Trying to give some more slack for screws connecting middle piece and arm.
+        cuboid([arm_length + arm_width + 2, pivot_offset.y + arm_length + arm_width / 2, middle_piece_height + 18.5], align=V_RIGHT + V_BACK, $fn=FN);
+    }
+}
+
+
 module three_piece_hinge(wall_angle) {
     dx = pivot_offset.x * cos(wall_angle) - pivot_offset.y * sin(wall_angle) - middle_piece_length / 2;
     arm_angle = asin(dx / arm_length);
@@ -150,27 +166,49 @@ module two_piece_hinge(wall_angle) {
 }
 
 
+module top_hinge_body(is_left, left_to_right_height_diff, wall_angle) {
+    z_offset = left_to_right_height_diff / 2 * (left_to_right_height_diff < 0 ? -1 : 1);
+    zrot(is_left ? -wall_angle : wall_angle) yrot(is_left ? 180 : 0) difference() {
+        union() {
+            cuboid([wall_thickness, 50, top_hinge_thickness], align=V_RIGHT + V_BACK);
+            zcyl(h=top_hinge_thickness, r=wall_thickness, $fn=FN);
+        }
+        zcyl(h=top_hinge_thickness, d=5.1, $fn=FN);
+        yrot(left_to_right_height_diff < 0 ? 180 : 0) zmove(z_offset) zcyl(h=z_offset + top_hinge_thickness / 2, r=wall_thickness + 0.2, align=V_DOWN, $fn=FN);
+        yspread(spacing=20) translate([wall_thickness / 2, 33, 0]) #yrot(is_left ? 180 : 0) zmove(top_hinge_thickness / 2) screw();
+    }
+}
+
+
 module assembly(opening_angle) {
     wall_angle = -(180 - opening_angle) / 2;
     wall(wall_angle);
     zrot(wall_angle) xmove(wall_thickness) adapter_plate();
+    zrot(wall_angle) xmove(wall_thickness) adapter_plate_cover();
 
     xflip() wall(wall_angle);
     xflip() zrot(wall_angle) xmove(wall_thickness) adapter_plate();
+    xflip() zrot(wall_angle) xmove(wall_thickness) adapter_plate_cover();
 
     three_piece_hinge(wall_angle=wall_angle);
     //two_piece_hinge(wall_angle=wall_angle);
+
+    zmove(100 + top_hinge_thickness / 2) top_hinge_body(is_left=true, left_to_right_height_diff=0, wall_angle=wall_angle);
+    zmove(100 + top_hinge_thickness / 2) top_hinge_body(is_left=false, left_to_right_height_diff=0, wall_angle=wall_angle);
 }
 
 
-//opening_angle = abs($t * 360 - 180);
-opening_angle = 0;
+opening_angle = abs($t * 360 - 180);
+//opening_angle = 0;
 wall_angle = -(180 - opening_angle) / 2;
 
-//xmove(-wall_thickness) zrot(-wall_angle)
-    //assembly(opening_angle=opening_angle);
+//xmove(-wall_thickness) zrot(-wall_angle) assembly(opening_angle=opening_angle);
+//top_hinge_body(is_left=false, left_to_right_height_diff=0, wall_angle=0);
+//top_hinge_body(is_left=true, left_to_right_height_diff=0, wall_angle=0);
+difference() {top_hinge_body(is_left=true, left_to_right_height_diff=0, wall_angle=0); zmove(-top_hinge_thickness / 2) #zcyl(d=6.9, h=1.2, align=V_UP, $fn=FN);} // With an incision for the ring in the middle.
+//adapter_plate_cover();
 //two_piece_hinge(wall_angle);
 //adapter_plate();
-arm();
+//arm();
 //middle_piece();
 //angular_arm();
