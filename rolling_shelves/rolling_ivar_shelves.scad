@@ -78,6 +78,7 @@ module left_shelf_body_130_cm() {
 
 module left_shelf() {
     move([0, 0, roll_height]) left_shelf_body_130_cm();
+    //move([0, 0, roll_height]) left_shelf_body_90_cm();
 }
 
 module outer_board(length, depth, left_miter=0, right_miter=0, center=false) {
@@ -91,29 +92,17 @@ module inner_board(length, depth, left_miter=0, right_miter=0, center=false) {
 module plain_board(length, depth, thickness, left_miter=0, right_miter=0) {
     difference() {
         cuboid([length, depth, thickness], center=false);
-        if (left_miter != 0) {
-            diagonal = thickness / cos(left_miter);
-            if (left_miter < 0) {
-                move([-length, 0, thickness] / 2)
-                    yrot(left_miter)
-                    cuboid([diagonal, depth, diagonal], align=V_DOWN + V_LEFT);
-            } else {
-                move([-length, 0, -thickness] / 2)
-                    yrot(left_miter)
-                    cuboid([diagonal, depth, diagonal], align=V_UP + V_LEFT);
-            }
-        }
-        if (right_miter != 0) {
-            diagonal = thickness / cos(right_miter);
-            if (right_miter < 0) {
-                move([length, 0, -thickness] / 2)
-                    yrot(right_miter)
-                    cuboid([diagonal, depth, diagonal], align=V_UP + V_RIGHT);
-            } else {
-                move([length, 0, thickness] / 2)
-                    yrot(right_miter)
-                    cuboid([diagonal, depth, diagonal], align=V_DOWN + V_RIGHT);
-            }
+
+        for (tuple = [[-1, left_miter], [1, right_miter]]) {
+            side = tuple[0];
+            miter_angle = tuple[1];
+            diagonal = thickness / cos(miter_angle);
+            direction_sign = (miter_angle > 0) ? side : -side;
+            zmove(thickness / 2)
+                yrot(miter_angle, cp=[length * (1 + side), 0, direction_sign * thickness] / 2)
+                    zmove(direction_sign * (thickness - diagonal) / 2)
+                        xmove(length * (1 + side) / 2)
+                            cuboid([diagonal, depth, diagonal], align=V_RIGHT * side + V_BACK);
         }
     }
 }
@@ -176,4 +165,5 @@ module wall() {
 
 //%wall();
 zrot(-90) left_shelf();
-//ivar_profile(1260, 500, left_miter=0, right_miter=15);
+//ivar_profile(1260, 500, left_miter=10, right_miter=15);
+//plain_board(1260, 500, 40, left_miter=30, right_miter=40);
