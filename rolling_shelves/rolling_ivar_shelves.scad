@@ -110,9 +110,9 @@ module plain_board(length, depth, thickness, left_miter=0, right_miter=0) {
 module ivar_profile_raw(length, depth) {
     for (i = [0:1])
         ymove(i * (depth - 32)) cuboid([2260, 32, 44], center=false);
-    ymove(32)
-        for (x = [72, 680, 1192, 1734, 2214]) {
-            xmove(x) cuboid([42, depth - 2 * 32, 10], center=false);
+        zmove((44 - 10) / 2)
+            for (x = [72, 680, 1192, 1734, 2214]) {
+                xmove(x) cuboid([42, depth, 10], center=false);
     }
 }
 
@@ -130,28 +130,17 @@ module ivar_profile(length, depth, left_miter=0, right_miter=0) {
 
             }
         }
-        if (left_miter != 0) {
-            diagonal = thickness / cos(left_miter);
-            if (left_miter < 0) {
-                zmove(thickness)
-                    yrot(left_miter)
-                        cuboid([diagonal, depth, diagonal], align=V_LEFT + V_BACK + V_DOWN);
-            } else {
-                yrot(left_miter)
-                    cuboid([diagonal, depth, diagonal], align=V_LEFT + V_BACK + V_UP);
-            }
-        }
-        if (right_miter != 0) {
-            diagonal = thickness / cos(right_miter);
-            if (right_miter < 0) {
-                move([length, 0, 0])
-                    yrot(right_miter)
-                    cuboid([diagonal, depth, diagonal], align=V_RIGHT + V_BACK + V_UP);
-            } else {
-                move([length, 0, thickness])
-                    yrot(right_miter)
-                    cuboid([diagonal, depth, diagonal], align=V_RIGHT + V_BACK + V_DOWN);
-            }
+
+        for (tuple = [[-1, left_miter], [1, right_miter]]) {
+            side = tuple[0];
+            miter_angle = tuple[1];
+            diagonal = thickness / cos(miter_angle);
+            direction_sign = (miter_angle > 0) ? side : -side;
+            zmove(thickness / 2)
+                yrot(miter_angle, cp=[length * (1 + side), 0, direction_sign * thickness] / 2)
+                    zmove(direction_sign * (thickness - diagonal) / 2)
+                        xmove(length * (1 + side) / 2)
+                            cuboid([diagonal, depth, diagonal], align=V_RIGHT * side + V_BACK);
         }
     }
 }
