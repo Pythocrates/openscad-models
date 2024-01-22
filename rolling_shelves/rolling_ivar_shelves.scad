@@ -89,21 +89,24 @@ module inner_board(length, depth, left_miter=0, right_miter=0, center=false) {
     plain_board(length=length, depth=depth, thickness=18, left_miter=left_miter, right_miter=right_miter);
 }
 
+module miters(length, depth, thickness, left_miter=0, right_miter=0) {
+    for (tuple = [[-1, left_miter], [1, right_miter]]) {
+        side = tuple[0];
+        miter_angle = tuple[1];
+        diagonal = thickness / cos(miter_angle);
+        direction_sign = (miter_angle > 0) ? side : -side;
+        zmove(thickness / 2)
+            yrot(miter_angle, cp=[length * (1 + side), 0, direction_sign * thickness] / 2)
+                zmove(direction_sign * (thickness - diagonal) / 2)
+                    xmove(length * (1 + side) / 2)
+                        cuboid([diagonal, depth, diagonal], align=V_RIGHT * side + V_BACK);
+    }
+}
+
 module plain_board(length, depth, thickness, left_miter=0, right_miter=0) {
     difference() {
         cuboid([length, depth, thickness], center=false);
-
-        for (tuple = [[-1, left_miter], [1, right_miter]]) {
-            side = tuple[0];
-            miter_angle = tuple[1];
-            diagonal = thickness / cos(miter_angle);
-            direction_sign = (miter_angle > 0) ? side : -side;
-            zmove(thickness / 2)
-                yrot(miter_angle, cp=[length * (1 + side), 0, direction_sign * thickness] / 2)
-                    zmove(direction_sign * (thickness - diagonal) / 2)
-                        xmove(length * (1 + side) / 2)
-                            cuboid([diagonal, depth, diagonal], align=V_RIGHT * side + V_BACK);
-        }
+        miters(length, depth, thickness, left_miter, right_miter);
     }
 }
 
@@ -127,21 +130,9 @@ module ivar_profile(length, depth, left_miter=0, right_miter=0) {
                 xflip(cp=[full_length / 2, 0, 0]) ivar_profile_raw(length=length, depth=depth);
             } else {
                 ivar_profile_raw(length=length, depth=depth);
-
             }
         }
-
-        for (tuple = [[-1, left_miter], [1, right_miter]]) {
-            side = tuple[0];
-            miter_angle = tuple[1];
-            diagonal = thickness / cos(miter_angle);
-            direction_sign = (miter_angle > 0) ? side : -side;
-            zmove(thickness / 2)
-                yrot(miter_angle, cp=[length * (1 + side), 0, direction_sign * thickness] / 2)
-                    zmove(direction_sign * (thickness - diagonal) / 2)
-                        xmove(length * (1 + side) / 2)
-                            cuboid([diagonal, depth, diagonal], align=V_RIGHT * side + V_BACK);
-        }
+        miters(length, depth, thickness, left_miter, right_miter);
     }
 }
 
