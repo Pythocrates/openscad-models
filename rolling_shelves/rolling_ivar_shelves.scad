@@ -14,6 +14,55 @@ baseboard_height = 70;
 
 left_shelf_depth = 500;
 
+module left_shelf_body_90_cm() {
+    outer_board_thickness = 44;
+    inner_board_thickness = 18;
+    shelf_depth = left_shelf_depth;
+    inner_board_length = 808;
+    shelf_width = inner_board_length + 2 * outer_board_thickness;
+    shelf_back_height = full_back_height - roll_height;
+    shelf_front_height = full_back_height + shelf_width - outer_board_thickness - roll_height;
+
+    // bottom board
+    echo("bottom board length = ", shelf_width);
+    outer_board(length=shelf_width, depth=shelf_depth, left_miter=0.1);
+
+    // short vertical board
+    back_vertical_board_length = shelf_back_height - sqrt(2) * outer_board_thickness;
+    echo("back vertical board length = ", back_vertical_board_length);
+    move([outer_board_thickness, 0, outer_board_thickness])
+        yrot(-90)
+            outer_board(length=back_vertical_board_length, depth=shelf_depth, right_miter=-45, left_miter=0.1);
+
+    // long vertical board
+    front_vertical_board_length = shelf_front_height - outer_board_thickness * sqrt(2);
+    echo("front vertical board length = ", front_vertical_board_length);
+    move([shelf_width, 0, outer_board_thickness])
+        yrot(-90)
+            outer_board(length=front_vertical_board_length, depth=shelf_depth, right_miter=-45, left_miter=0.1);
+
+    // top board
+    top_board_length = shelf_width * sqrt(2) + outer_board_thickness;
+    echo("top board length = ", top_board_length);
+    color("red") zmove(back_vertical_board_length)
+        yrot(-45)
+            outer_board(length=top_board_length, depth=shelf_depth, left_miter=45, right_miter=45);
+
+    // inner horizontal boards
+    xmove(outer_board_thickness)
+        for (z = [250, 500, shelf_back_height + (1 - sqrt(2)) * outer_board_thickness - inner_board_thickness])
+            zmove(z)
+                inner_board(length=inner_board_length, depth=shelf_depth);
+
+    color("blue")
+    move([shelf_width, 0, 860])
+        yrot(0) move([inner_board_length / 2, -shelf_depth / 2, inner_board_thickness / 2])
+            inner_board(length=inner_board_length, depth=shelf_depth);
+
+}
+
+
+
 module left_shelf_body_130_cm() {
     outer_board_thickness = 44;
     inner_board_thickness = 18;
@@ -77,8 +126,8 @@ module left_shelf_body_130_cm() {
 
 
 module left_shelf() {
-    move([0, 0, roll_height]) left_shelf_body_130_cm();
-    //move([0, 0, roll_height]) left_shelf_body_90_cm();
+    //move([0, 0, roll_height]) left_shelf_body_130_cm();
+    move([0, 0, roll_height]) left_shelf_body_90_cm();
 }
 
 module outer_board(length, depth, left_miter=0, right_miter=0, center=false) {
@@ -143,7 +192,9 @@ module wall() {
     color("white") zmove(870) prismoid(size1=[1600, 0], size2=[1600, 1600], shift=[0, -800], h=1600, align=V_UP + V_RIGHT);
 }
 
-//%wall();
+%wall();
 zrot(-90) left_shelf();
+xmove(500) zrot(-90) left_shelf();
+xmove(1000) zrot(-90) left_shelf();
 //ivar_profile(1260, 500, left_miter=10, right_miter=15);
 //plain_board(1260, 500, 40, left_miter=30, right_miter=40);
