@@ -8,6 +8,8 @@ use <BOSL/transforms.scad>
 
 FN = 180;
 
+hole_size = 3.4; //3;
+strut_width = 1.1; //1.5;
 
 module outer_shape(sink_radius, height, bottom_radius, thickness, spherical=true) {
     intersection() {
@@ -47,7 +49,7 @@ module full_cap(sink_radius, height, bottom_radius, thickness, spherical) {
 module grid_cap(sink_radius, height, bottom_radius, thickness, spherical, center_offset=0) {
     difference() {
         full_cap(sink_radius, height, bottom_radius, thickness, spherical=spherical);
-        yflip_copy() yspread(n=7, spacing=3 + 1.5, sp=[0, center_offset, 0]) cuboid([2 * bottom_radius, 3, bottom_radius], align=V_BOTTOM);
+        yflip_copy() yspread(n=7, spacing=hole_size + strut_width, sp=[0, center_offset, 0]) cuboid([2 * bottom_radius, hole_size, bottom_radius], align=V_BOTTOM);
     }
 }
 
@@ -73,4 +75,25 @@ module shower_sink_strainer(sink_radius, height, bottom_radius, thickness=1, sph
 }
 
 
+module comb_row(n, center_offset) {
+    yflip_copy() xspread(n=n, spacing=hole_size + strut_width, sp=[(1 - n) / 2 * (hole_size + strut_width), center_offset, 0]) cuboid([hole_size - 0.2, hole_size - 0.2, 17], align=V_BOTTOM);
+}
+
+
+module comb() {
+    intersection() {
+        cyl(r=61 / 2 - 1.1, h=20, align=V_BOTTOM, $fn=FN);
+        union() {
+            comb_row(n=13, center_offset=6);
+            comb_row(n=13, center_offset=6 + hole_size + strut_width);
+            comb_row(n=11, center_offset=6 + (hole_size + strut_width) * 2);
+            comb_row(n=9, center_offset=6 + (hole_size + strut_width) * 3);
+            comb_row(n=7, center_offset=6 + (hole_size + strut_width) * 4);
+            comb_row(n=3, center_offset=6 + (hole_size + strut_width) * 5);
+        }
+    }
+    zmove(-17) zcyl(h=3, r=61 / 2 - 1, align=V_BOTTOM, $fn=FN);
+}
+
 shower_sink_strainer(sink_radius=61 / 2, height=16, bottom_radius=51, thickness=1, spherical=false);
+//color("red") comb();
