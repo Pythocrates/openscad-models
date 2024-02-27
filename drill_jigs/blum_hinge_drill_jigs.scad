@@ -21,7 +21,7 @@ module door(z_offset) {
 
 module body_holes(label, label_position) {
     ymove(-2) xcyl(d=1, h=200, $fn=FN);
-    xmove(-37) zspread(n=2, spacing=32)
+    xmove(-28) zspread(n=2, spacing=32)
     {
         ycyl(d=2, h=2, align=V_FRONT, $fn=FN);
         move(label_position)
@@ -54,8 +54,8 @@ module door_holes(label, label_position) {
 module body_piece() {
     FULL_HEIGHT = 88;
     color("gray") difference() {
-        move([1, -2, 0]) cuboid([42, 7, FULL_HEIGHT], align=V_LEFT + V_BACK);
-        cuboid([42 - 1, 7 - 2, FULL_HEIGHT], align=V_LEFT + V_BACK);
+        move([1, -2, 0]) cuboid([35, 7, FULL_HEIGHT], align=V_LEFT + V_BACK);
+        cuboid([35 - 1, 7 - 2, FULL_HEIGHT], align=V_LEFT + V_BACK);
         move(0.5 * [-1, 1, 0]) zcyl(r=1, h=FULL_HEIGHT, $fn=FN);
         zmove(FULL_HEIGHT / 2 - 50) body_holes(label="K↑", label_position=[7, 0, 5]);
         zmove(-FULL_HEIGHT / 2 + 70) body_holes(label="K↓", label_position=[7, 0, -5]);
@@ -79,10 +79,11 @@ module combined_piece(z_offset) {
     xmove(2) zmove(9 + z_offset) door_piece(z_offset=z_offset);
 }
 
-Z_OFFSET = -4; // Specifies in millimeters the difference between the top of the door and the top of the body.
+Z_OFFSET = -2; // Specifies in millimeters the difference between the top of the door and the top of the body.
 
-body();
-ymove(-2) door(z_offset=Z_OFFSET);
+//body();
+//ymove(-2) door(z_offset=Z_OFFSET);
 
-zmove(1225 / 2 - 44) zrot(-90) combined_piece(z_offset=Z_OFFSET);
-zmove(-1225 / 2 + 44) zrot(-90) combined_piece(z_offset=Z_OFFSET);
+//zmove(1225 / 2 - 44) zrot(-90) combined_piece(z_offset=Z_OFFSET);
+//zmove(-1225 / 2 + 44) zrot(-90) combined_piece(z_offset=Z_OFFSET);
+combined_piece(z_offset=Z_OFFSET);
